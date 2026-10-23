@@ -83,6 +83,7 @@ feature/…       ●──●     ●──●                  one branch per 
 | `fix/<short-name>` | Bug fixes on `dev` | Same as feature. |
 | `hotfix/<short-name>` | Urgent production fix | Branch from `main`, PR into `main`, then merge `main` back into `dev`. |
 | `docs/<short-name>` | Wiki-only changes | PR into `dev`. |
+| `chore/<short-name>` | Tooling, CI, dependencies | PR into `dev`. |
 
 ### Rules
 - **Changes reach `dev` and `main` only through pull requests.** Never push directly to either branch.
@@ -94,7 +95,7 @@ feature/…       ●──●     ●──●                  one branch per 
 ### Pull request checklist
 - [ ] Targets `dev` (or `main` only for a release PR or `hotfix/*`)
 - [ ] Description covers what changed, why, and how it was tested
-- [ ] `npm run lint` and `npm run build` pass
+- [ ] CI is green: lint, typecheck and build (D-044). Run them locally first with `npm run lint`, `npm run typecheck`, `npm run build`
 - [ ] Wiki updated in the same PR when a requirement or decision changes (page + [decisions](../decisions.md) + [log](../log.md))
 - [ ] Database changes come with a Prisma migration
 
