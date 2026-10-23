@@ -127,3 +127,6 @@ Slots are 15 min, matching the reference screenshot. The dining duration default
 
 **D-039 — No cover limit; book until the room is full** · 2026-10-24 · Accepted (supersedes D-018 and the slot-capacity part of D-006)
 There is no per-slot cover cap. A booking is allowed whenever a free table (or combinable set of tables) fits the party at that time. Capacity comes from table availability alone.
+
+**D-040 — Branching: main = production, dev = integration, feature branches** · 2026-10-24 · Accepted
+`main` holds only released, production-ready code. `dev` is where finished work is integrated. Every roadmap phase, feature, fix and wiki change gets its own branch off `dev` and returns to it **only through a pull request**; nobody pushes directly to `dev` or `main`. A release is a PR from `dev` into `main`. → [conventions](architecture/conventions.md#git-branching)
