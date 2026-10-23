@@ -14,8 +14,8 @@ updated: 2026-10-24
 | UI kit | **shadcn/ui** (Radix + lucide-react) | See [ui-components](ui-components.md) |
 | Database | **PostgreSQL** | Self-hosted on the VPS (D-035) |
 | Hosting | **VPS** (D-035) | See [Deployment](#deployment-vps) |
-| ORM | **Prisma** | Schema in `prisma/schema.prisma`; migrations committed |
-| Auth | **Auth.js** (NextAuth v5) | Credentials provider (email + password, hashed). Role stored on `User`. |
+| ORM | **Prisma 7.10** (D-043) | Schema in `prisma/schema.prisma`; config in `prisma.config.ts`; client generated to `lib/generated/prisma` (git-ignored); migrations committed |
+| Auth | **Auth.js** v5 beta (D-042) | Credentials provider (email + bcrypt password), JWT session. Role stored on `User` and in the token. |
 | Forms / validation | react-hook-form + zod | Use the same zod schemas in server actions |
 | Tables | TanStack Table (via shadcn data-table) | |
 | Dates | date-fns (+ `@date-fns/tz` if needed) | Time zone per [conventions](conventions.md) |
@@ -28,6 +28,22 @@ Before writing any Next.js code, read the bundled docs in `node_modules/next/dis
 - `01-app/02-guides/forms.md` and the server actions docs: mutations
 
 Check every API against those docs. Don't rely on memory of Next 13–15.
+
+## Cache Components (enabled in `next.config.ts`)
+- A page renders a **static shell** first. Anything that reads the request (session, cookies) must sit **inside a `<Suspense>` boundary** or the build fails.
+- Read the session only through `getCurrentUser()` / `hasPermission()` in `lib/dal.ts`, from a component inside a boundary. Never read it at the top of a layout or page.
+- Gate a whole page with `<RequirePermission permission="…">` (`components/require-permission.tsx`). It streams the check in its own boundary and shows "No access" when the role lacks the permission.
+- Client components must not call `Math.random()`, `Date.now()` and similar during render: it breaks prerendering.
+
+## Auth & sessions
+| File | Role |
+|---|---|
+| `auth.config.ts` | Shared config: sign-in page, JWT callbacks (id + role), `authorized` redirect rule. No database imports. |
+| `auth.ts` | Full Auth.js setup with the Credentials provider (Prisma + bcrypt). Exports `auth`, `signIn`, `signOut`. |
+| `proxy.ts` | Next 16 proxy (formerly middleware): sends signed-out visitors to `/login` and signed-in users away from it. |
+| `lib/dal.ts` | Data Access Layer: `getCurrentUser()`, `hasPermission()`. |
+| `lib/permissions.ts` | Role × permission matrix (`can(role, permission)`), mirroring [roles-permissions](roles-permissions.md). |
+| `app/login/actions.ts` | `login` / `logout` server actions. |
 
 ## Data access pattern
 - Server Components read data with Prisma directly, through a small `lib/data/*` layer.
@@ -43,5 +59,5 @@ Decision D-035: the app and Postgres run on the owner's VPS. Proposed setup (det
 - Check the Next 16 self-hosting guide in `node_modules/next/dist/docs/` before setting this up.
 
 ## Environment
-- `DATABASE_URL`, `AUTH_SECRET` in `.env.local` (never committed).
-- A seed script creates the first Owner account and sample tables and items for development.
+- `DATABASE_URL`, `AUTH_SECRET` and the seed variables live in `.env` (never committed); `.env.example` is the committed template. Prisma's CLI reads `.env` through `dotenv`.
+- `npm run db:seed` creates the first Owner account. With `SEED_DEMO_PASSWORD` set it also creates demo Manager and Staff accounts for testing roles (refused when `NODE_ENV=production`).

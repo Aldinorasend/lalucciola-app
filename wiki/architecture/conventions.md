@@ -6,10 +6,11 @@ updated: 2026-10-24
 
 # Conventions
 
-## Folder layout (proposed)
+## Folder layout
 ```
 app/
-  login/page.tsx
+  login/                       page, login form, login/logout actions
+  api/auth/[...nextauth]/      Auth.js route handler
   (dashboard)/                 route group with the sidebar layout
     layout.tsx                 SidebarProvider + AppSidebar + header
     page.tsx                   Dashboard (today overview)
@@ -22,15 +23,20 @@ app/
       general/  tables/  users/  units/
 components/
   ui/                          shadcn generated
-  app-sidebar.tsx
+  app-sidebar.tsx  app-header.tsx  nav-main.tsx  nav-user.tsx
+  require-permission.tsx       server-side role gate
   bookings/  inventory/  dashboard/
 lib/
-  auth.ts  db.ts  permissions.ts  money.ts  dates.ts
+  dal.ts                       session access (getCurrentUser, hasPermission)
+  db.ts  permissions.ts  navigation.ts  money.ts  dates.ts
+  generated/prisma/            generated client (git-ignored)
   data/                        read queries per module
   actions/                     server actions per module
   validation/                  zod schemas
 prisma/
-  schema.prisma  seed.ts
+  schema.prisma  seed.ts  migrations/
+auth.ts  auth.config.ts        Auth.js setup (see tech-stack)
+prisma.config.ts               Prisma CLI config
 proxy.ts                       redirects signed-out users to /login
 docker-compose.yml             local Postgres for development
 wiki/                          this knowledge base
@@ -100,3 +106,14 @@ feature/…       ●──●     ●──●                  one branch per 
 ### Recommended GitHub settings (owner)
 - Protect `main` and `dev`: require a pull request before merging and block force-pushes and deletion.
 - Set `dev` as the repository's default branch, so new PRs target it automatically.
+
+## Local development
+Requires Node 22+ and Docker Desktop (D-041).
+
+1. `npm install` (also generates the Prisma client)
+2. Copy `.env.example` to `.env` and set `AUTH_SECRET` (`npx auth secret` prints one).
+3. `npm run db:up` starts Postgres 17 on **localhost:5433**.
+4. `npm run db:migrate` applies migrations, and `npm run db:seed` creates the Owner (plus demo Manager/Staff if `SEED_DEMO_PASSWORD` is set).
+5. `npm run dev` and open http://localhost:3000. Sign in with the seed email and password from `.env`.
+
+Other scripts: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).
