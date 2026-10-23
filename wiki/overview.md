@@ -13,7 +13,8 @@ One internal web app where La Lucciola staff manage **reservations and tables** 
 - **Type:** restaurant / café
 - **Language:** English UI
 - **Currency:** Indonesian Rupiah (IDR), shown as `Rp 125.000` (see [conventions](architecture/conventions.md))
-- **Locations:** a single location (assumed; see [open questions](open-questions.md))
+- **Locations:** a single location, with no multi-branch support planned (D-029)
+- **Time zone:** Asia/Jakarta (WIB)
 
 ## Users
 Staff only. **There is no public-facing page and no online customer booking.** Customers book by phone, WhatsApp or walk-in, and staff enter those bookings into the app.
@@ -27,7 +28,7 @@ Staff only. **There is no public-facing page and no online customer booking.** C
 Details: [roles & permissions](architecture/roles-permissions.md).
 
 ## In scope (v1)
-- **Booking:** tables with capacities, cover limits per time slot, visual floor plan, calendar (day/week/month), daily timeline, tables display, walk-ins, waitlist, statuses (Booked, Seated, Completed, Cancelled, No-show). See [booking](modules/booking.md) and [floor plan](modules/floor-plan.md).
+- **Booking:** tables with capacities (bookable until the room is full), visual floor plan, calendar (day/week/month), daily timeline, tables display, walk-ins, waitlist, statuses (Booked, Seated, Completed, Cancelled, No-show). See [booking](modules/booking.md) and [floor plan](modules/floor-plan.md).
 - **Inventory:** raw ingredients and beverages/bottled goods, manual stock adjustments, low-stock alerts, expiry/batch tracking, stock movement log with cost and stock value. See [inventory](modules/inventory.md).
 - [Dashboard](modules/dashboard.md) (today overview), [Reports](modules/reports.md), [Settings](modules/settings.md).
 

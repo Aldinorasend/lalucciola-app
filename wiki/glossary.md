@@ -11,9 +11,9 @@ updated: 2026-10-24
 | **Booking / Reservation** | A guest's reserved table(s) at a date and time. Used interchangeably. |
 | **Cover** | One guest. A party of 4 = 4 covers. |
 | **Party size** | Number of covers in a booking. |
-| **Slot** | A fixed time block (e.g. 30 min) used for start times and capacity limits. |
-| **Slot capacity** | Max covers that may *start* in one slot (kitchen pacing), separate from table seats. |
-| **Area** | A section of the room (e.g. Indoor, Terrace). Groups tables. |
+| **Slot** | A 15-min time block. Booking start times snap to slots. |
+| **Fully booked** | No free table or combinable set fits the party at that time. There is no separate cover limit. |
+| **Section / Area** | A part of the room that groups tables (Section 1–4, Section L). Shown as "Section" in the UI; it can be closed. |
 | **Table** | A physical table with a number and seat capacity (min/max). |
 | **Walk-in** | A guest without a booking who is seated right away. Recorded as a booking with source `walk-in`. |
 | **Waitlist** | A queue of guests waiting for a table to free up. |
