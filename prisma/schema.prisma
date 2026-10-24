@@ -25,6 +25,7 @@ model User {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  bookings     Booking[]
 }
 
 // Booking settings: wiki/modules/settings.md, wiki/modules/floor-plan.md
@@ -57,6 +58,7 @@ model Table {
   posY       Int        @default(0)
   shape      TableShape @default(SQUARE)
   rotation   Int        @default(0)
+  bookings   BookingTable[]
 }
 
 // Booking start window per weekday, in minutes after midnight (restaurant time).
@@ -73,4 +75,55 @@ model BookingSettings {
   diningMinutes       Int @default(90)
   reservedSoonMinutes Int @default(30)
   lateGraceMinutes    Int @default(15)
+}
+
+// Bookings: wiki/modules/booking.md
+
+enum BookingStatus {
+  BOOKED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingSource {
+  PHONE
+  WHATSAPP
+  WALK_IN
+  OTHER
+}
+
+model Booking {
+  id           String         @id @default(cuid())
+  guestName    String
+  guestPhone   String?
+  partySize    Int
+  startAt      DateTime       @db.Timestamptz(3)
+  endAt        DateTime       @db.Timestamptz(3)
+  status       BookingStatus  @default(BOOKED)
+  source       BookingSource  @default(PHONE)
+  notes        String?
+  seatedAt     DateTime?      @db.Timestamptz(3)
+  completedAt  DateTime?      @db.Timestamptz(3)
+  cancelledAt  DateTime?      @db.Timestamptz(3)
+  cancelReason String?
+  createdById  String
+  createdBy    User           @relation(fields: [createdById], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  tables       BookingTable[]
+
+  @@index([startAt])
+}
+
+// Large groups can sit at several combinable tables.
+model BookingTable {
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tableId   String
+  table     Table   @relation(fields: [tableId], references: [id])
+
+  @@id([bookingId, tableId])
+  @@index([tableId])
 }

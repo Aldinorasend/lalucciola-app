@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type HoursRow, toTime, WEEKDAYS } from "@/lib/booking-settings";
-import { useActionToast } from "./use-action-toast";
+import { useActionToast } from "@/components/use-action-toast";
 
 type Settings = {
   slotMinutes: number;
