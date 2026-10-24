@@ -29,6 +29,9 @@ const SOURCES = [
 ];
 
 export function BookingForm({ initial, slotMinutes, onDone }: { initial: BookingFormValues; slotMinutes: number; onDone: () => void }) {
+  // Editing a walk-in: phone optional, any minute, source stays Walk-in.
+  const walkIn = initial.source === "WALK_IN";
+  const sources = walkIn ? [{ value: "WALK_IN", label: "Walk-in" }, ...SOURCES] : SOURCES;
   const [onSubmit, pending] = useActionToast(saveBooking, initial.id ? "Booking updated" : "Booking saved", onDone);
   const [date, setDate] = useState(initial.date);
   const [time, setTime] = useState(initial.time);
@@ -59,7 +62,7 @@ export function BookingForm({ initial, slotMinutes, onDone }: { initial: Booking
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="guestPhone">Phone</Label>
-          <Input id="guestPhone" name="guestPhone" type="tel" defaultValue={initial.guestPhone} required maxLength={30} />
+          <Input id="guestPhone" name="guestPhone" type="tel" defaultValue={initial.guestPhone} required={!walkIn} maxLength={30} placeholder={walkIn ? "Optional" : undefined} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="partySize">Guests</Label>
@@ -86,7 +89,7 @@ export function BookingForm({ initial, slotMinutes, onDone }: { initial: Booking
             id="time"
             name="time"
             type="time"
-            step={slotMinutes * 60}
+            step={walkIn ? 60 : slotMinutes * 60}
             value={time}
             onChange={(event) => setTime(event.target.value)}
             required
@@ -101,7 +104,7 @@ export function BookingForm({ initial, slotMinutes, onDone }: { initial: Booking
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {SOURCES.map((source) => (
+              {sources.map((source) => (
                 <SelectItem key={source.value} value={source.value}>
                   {source.label}
                 </SelectItem>
