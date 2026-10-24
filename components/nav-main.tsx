@@ -25,7 +25,13 @@ export function NavMain({ role }: { role: Role }) {
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.title}
+                // The default active tint matches the hover tint and is nearly invisible; use the solid primary colour.
+                className="data-active:bg-sidebar-primary data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary/90 data-active:hover:text-sidebar-primary-foreground"
+              >
                 <Link href={item.href}>
                   <item.icon />
                   <span>{item.title}</span>
