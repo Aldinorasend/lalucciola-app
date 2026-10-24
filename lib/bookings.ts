@@ -127,3 +127,37 @@ export const bookingSchema = z
 export function parseBookingForm(form: FormData) {
   return bookingSchema.safeParse({ ...Object.fromEntries(form), tableIds: form.getAll("tableIds") });
 }
+
+export type TableState = "FREE" | "SOON" | "SEATED";
+
+/**
+ * Live state of one table from its active bookings (wiki/modules/floor-plan.md):
+ * SEATED while a party sits there; SOON when a booking starts within the window
+ * (or is late); otherwise FREE. Also returns the next upcoming booking.
+ */
+export function tableState<T extends { status: BookingStatus; startAt: Date; endAt: Date }>(
+  bookings: T[],
+  now: Date,
+  reservedSoonMinutes: number,
+): { state: TableState; current?: T; next?: T } {
+  const seated = bookings.find((booking) => booking.status === "SEATED");
+  const upcoming = bookings
+    .filter((booking) => booking.status === "BOOKED" && booking.endAt > now)
+    .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+  const next = upcoming[0];
+  if (seated) return { state: "SEATED", current: seated, next };
+  if (next && next.startAt.getTime() <= now.getTime() + reservedSoonMinutes * 60_000) return { state: "SOON", next };
+  return { state: "FREE", next };
+}
+
+// Walk-ins are seated now; name and phone are optional (D-021).
+export const walkInSchema = z.object({
+  guestName: z.preprocess((value) => (typeof value === "string" && value.trim() ? value.trim() : "Walk-in"), z.string().max(80, "Name is too long")),
+  guestPhone: optionalText(30).refine((phone) => !phone || /^[+\d][\d\s-]{5,}$/.test(phone), "Enter a valid phone number"),
+  partySize: z.coerce.number().int("Party size must be a whole number").min(1, "Party size must be at least 1").max(60, "Party size is too large"),
+  tableIds: z.array(z.string().min(1)).min(1, "Pick at least one table"),
+});
+
+export function parseWalkInForm(form: FormData) {
+  return walkInSchema.safeParse({ ...Object.fromEntries(form), tableIds: form.getAll("tableIds") });
+}
