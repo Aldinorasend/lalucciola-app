@@ -12,7 +12,7 @@ Phases run in order. Each phase should end with something usable.
 |---|---|---|
 | 0. Foundation ✅ | App shell runs, login works | Install shadcn/ui, Prisma + Postgres, Auth.js credentials login, roles, [sidebar layout](modules/layout-sidebar.md), seed Owner user. Branch `feature/phase-0-foundation`. |
 | 1. Booking core ✅ | Staff can take bookings | Split into three PRs (D-046): **1a ✅** sections, tables, booking hours and slots in [settings](modules/settings.md) · **1b ✅** create/edit booking, statuses, table-availability check, day list · **1c ✅** table × time timeline, calendar day/week/month |
-| 2. Tables & floor | Live view of the room | [Tables display](modules/floor-plan.md), floor plan, walk-ins, waitlist |
+| 2. Tables & floor | Live view of the room | Split into three PRs: **2a ✅** [tables display](modules/floor-plan.md) and walk-ins · **2b** floor plan (and section closures) · **2c** waitlist |
 | 3. Inventory core | Know what is in stock | Items, categories, units, stock movements (in / usage / waste / count), movement log with cost |
 | 4. Freshness & alerts | Avoid stockouts and waste | Batches with expiry, expiry warnings, low-stock alerts |
 | 5. Dashboard & reports | Overview for the owner | [Dashboard](modules/dashboard.md) today view, [reports](modules/reports.md) |
