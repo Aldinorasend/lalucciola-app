@@ -14,7 +14,7 @@ A draft of the Prisma entities. Field names are indicative. Money is stored as *
 
 ## Booking module
 - **Area** ✅ (shown as "Section" in the UI): id, name (unique: Section 1–4, Section L), sortOrder
-- **AreaClosure**: id, areaId, date, servicePeriodId? (null = whole day), reason?, createdById (D-033)
+- **AreaClosure** ✅: id, areaId, date (`@db.Date`, restaurant-local day), reason?, createdById; unique per section and day. Whole days only; per service period is not modelled (D-049).
 - **Table** ✅: id, label (unique string: "101", "1A", "L3"), areaId, minSeats, maxSeats, active, combinable (bool), **posX, posY, shape (`ROUND | SQUARE | RECT`), rotation**. Width and height are not stored; the floor plan derives the size from shape and seats. Seed data comes from [floor-plan](../modules/floor-plan.md#table-list-transcribed-from-the-screenshot).
 - **Booking** ✅ (times stored as `timestamptz`, indexed on `startAt`)
   - id, guestName, guestPhone, partySize
