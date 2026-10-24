@@ -22,10 +22,10 @@ const SETTING_FIELDS: { name: keyof Settings; label: string; hint: string }[] = 
 ];
 
 export function BookingHoursForm({ settings, hours }: { settings: Settings; hours: HoursRow[] }) {
-  const [formAction, pending] = useActionToast(saveBookingHours, "Booking hours saved");
+  const [onSubmit, pending] = useActionToast(saveBookingHours, "Booking hours saved");
 
   return (
-    <form action={formAction} className="grid gap-6">
+    <form onSubmit={onSubmit} className="grid gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {SETTING_FIELDS.map((field) => (
           <div key={field.name} className="grid gap-1.5">

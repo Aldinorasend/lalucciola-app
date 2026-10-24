@@ -50,9 +50,9 @@ export function TablesEditor({ areas, tables }: { areas: Area[]; tables: TableRo
 }
 
 function SectionNameForm({ area }: { area: Area }) {
-  const [formAction, pending] = useActionToast(renameArea, "Section renamed");
+  const [onSubmit, pending] = useActionToast(renameArea, "Section renamed");
   return (
-    <form action={formAction} className="flex items-center gap-2">
+    <form onSubmit={onSubmit} className="flex items-center gap-2">
       <input type="hidden" name="id" value={area.id} />
       <Input aria-label="Section name" name="name" defaultValue={area.name} className="max-w-56 font-medium" required />
       <Button type="submit" variant="outline" size="sm" disabled={pending}>
@@ -63,12 +63,12 @@ function SectionNameForm({ area }: { area: Area }) {
 }
 
 function TableForm({ table, areas }: { table: TableRow; areas: Area[] }) {
-  const [formAction, pending] = useActionToast(updateTable, `Table ${table.label} saved`);
+  const [onSubmit, pending] = useActionToast(updateTable, `Table ${table.label} saved`);
   const id = (field: string) => `${field}-${table.id}`;
 
   return (
     <form
-      action={formAction}
+      onSubmit={onSubmit}
       className="grid grid-cols-2 items-center gap-3 border-t py-2 md:grid-cols-[4rem_5rem_5rem_9rem_7rem_6rem_auto] md:border-0 md:py-0"
     >
       <input type="hidden" name="id" value={table.id} />
