@@ -23,6 +23,36 @@ export function localParts(instant: Date) {
   };
 }
 
+// Calendar dates ("YYYY-MM-DD") are restaurant-local and handled as UTC midnight so no zone shifts them.
+export function shiftDate(date: string, days: number) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+export function dayOfWeek(date: string) {
+  return new Date(`${date}T00:00:00Z`).getUTCDay();
+}
+
+export function formatDay(date: string, options: Intl.DateTimeFormatOptions = { weekday: "long", day: "numeric", month: "long", year: "numeric" }) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-GB", { ...options, timeZone: "UTC" });
+}
+
+/** Monday-to-Sunday dates of the week containing `date`. */
+export function weekDates(date: string) {
+  const monday = shiftDate(date, -((dayOfWeek(date) + 6) % 7));
+  return Array.from({ length: 7 }, (_, index) => shiftDate(monday, index));
+}
+
+/** Full Monday-to-Sunday weeks covering the month of `date`. */
+export function monthWeeks(date: string) {
+  const first = `${date.slice(0, 7)}-01`;
+  const weeks: string[][] = [];
+  for (let week = weekDates(first); week[0].slice(0, 7) <= date.slice(0, 7); week = weekDates(shiftDate(week[0], 7))) {
+    weeks.push(week);
+  }
+  return weeks;
+}
+
 export function formatLocalTime(instant: Date) {
   return toTime(localParts(instant).minutes);
 }
