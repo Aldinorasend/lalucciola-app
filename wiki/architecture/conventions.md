@@ -117,6 +117,6 @@ Requires Node 22+ and Docker Desktop (D-041).
 4. `npm run db:migrate` applies migrations, and `npm run db:seed` creates the Owner (plus demo Manager/Staff if `SEED_DEMO_PASSWORD` is set).
 5. `npm run dev` and open http://localhost:3000. Sign in with the seed email and password from `.env`.
 
-Other scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).
+Other scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:db` (booking write tests against a real database: point `DATABASE_URL` at a throwaway database such as `lalucciola_test`, run `npx prisma migrate deploy` first; never at production), `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).
 
 **After changing `prisma/schema.prisma`:** run `npm run db:migrate`, then `npx prisma generate` (Prisma 7 no longer generates on migrate), then restart `npm run dev`. If a page still says a model is `undefined`, stop the dev server and delete `.next/`: Turbopack caches the old client on disk.

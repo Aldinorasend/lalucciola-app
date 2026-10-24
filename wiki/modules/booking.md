@@ -53,7 +53,7 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 - **New / edit booking** in a side sheet. The table picker shows every active table by section and crosses out the ones taken at the chosen time (with the guest's name). Only BOOKED or SEATED bookings can be edited.
 - **Status actions:** Seat, Complete, Mark no-show (also a one-click button on Late bookings), Cancel (asks for a reason).
 - **Source** in this form is Phone, WhatsApp or Other. Walk-ins use their own quick flow.
-- **Walk-ins (Phase 2a):** "Seat walk-in" on a free table card asks for guests, optional name (defaults to "Walk-in") and optional phone, then creates a SEATED booking with source WALK_IN starting now for one dining duration. Booking hours and slots don't apply; the party must fit and the table must be free for that time.
+- **Walk-ins (Phase 2a):** "Seat walk-in" on a free table card asks for guests, optional name (defaults to "Walk-in") and optional phone, then creates a SEATED booking with source WALK_IN starting now for one dining duration. Booking hours and slots don't apply; the party must fit and the table must be free for that time. Editing a walk-in keeps these rules: phone optional, any minute, no booking-window check.
 - **Server checks:** start time on a slot within that weekday's hours; party fits the chosen tables; only combinable tables can be joined; no overlap with another BOOKED/SEATED booking on the same table.
 
 ## Built in Phase 1c

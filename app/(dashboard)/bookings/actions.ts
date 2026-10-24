@@ -14,73 +14,11 @@ import {
   parseWalkInForm,
   toInstant,
 } from "@/lib/bookings";
+import { writeBooking } from "@/lib/booking-writes";
 import { getCurrentUser, hasPermission } from "@/lib/dal";
 import { db } from "@/lib/db";
 
 const NO_ACCESS = { error: "Your role can't manage bookings." };
-
-class BookingConflict extends Error {}
-
-type BookingData = {
-  guestName: string;
-  guestPhone: string | null;
-  partySize: number;
-  source: "PHONE" | "WHATSAPP" | "WALK_IN" | "OTHER";
-  notes: string | null;
-  startAt: Date;
-  endAt: Date;
-  status?: "SEATED";
-  seatedAt?: Date;
-};
-
-/**
- * Creates or updates a booking unless one of its tables is taken at that time.
- * Returns the clash message, or null when saved.
- */
-async function writeBooking({
-  id,
-  tableIds,
-  startAt,
-  endAt,
-  data,
-  createdById,
-}: {
-  id?: string;
-  tableIds: string[];
-  startAt: Date;
-  endAt: Date;
-  data: BookingData;
-  createdById: string;
-}) {
-  const links = tableIds.map((tableId) => ({ tableId }));
-  try {
-    await db.$transaction(async (tx) => {
-      // Serialize saves per table so two staff can't book the same table at once.
-      for (const tableId of [...tableIds].sort()) {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${tableId}))::text`;
-      }
-      const clash = await tx.bookingTable.findFirst({
-        where: {
-          tableId: { in: tableIds },
-          bookingId: id ? { not: id } : undefined,
-          booking: { status: { in: [...ACTIVE_STATUSES] }, startAt: { lt: endAt }, endAt: { gt: startAt } },
-        },
-        select: { table: { select: { label: true } }, booking: { select: { guestName: true } } },
-      });
-      if (clash) throw new BookingConflict(`Table ${clash.table.label} is already booked then (${clash.booking.guestName}).`);
-
-      if (id) {
-        await tx.booking.update({ where: { id }, data: { ...data, tables: { deleteMany: {}, create: links } } });
-      } else {
-        await tx.booking.create({ data: { ...data, createdById, tables: { create: links } } });
-      }
-    });
-  } catch (error) {
-    if (error instanceof BookingConflict) return error.message;
-    throw error;
-  }
-  return null;
-}
 
 export async function saveBooking(_previous: ActionResult, form: FormData): Promise<ActionResult> {
   const user = await getCurrentUser();
@@ -96,7 +34,7 @@ export async function saveBooking(_previous: ActionResult, form: FormData): Prom
     db.bookingSettings.findUnique({ where: { id: 1 } }),
     db.openingHours.findUnique({ where: { dayOfWeek: dayOfWeek(date) } }),
     db.table.findMany({ where: { id: { in: tableIds } } }),
-    id ? db.booking.findUnique({ where: { id }, select: { status: true } }) : null,
+    id ? db.booking.findUnique({ where: { id }, select: { status: true, source: true } }) : null,
   ]);
   if (!settings || !hours) return { error: "Booking settings are missing. Ask the owner to check Settings." };
   if (id && !existing) return { error: "This booking no longer exists." };
@@ -105,7 +43,9 @@ export async function saveBooking(_previous: ActionResult, form: FormData): Prom
   }
   if (tables.length !== tableIds.length) return { error: "A chosen table no longer exists. Reload and try again." };
 
-  const problem = checkStartTime(minutes, hours, settings.slotMinutes) ?? checkTables(tables, guest.partySize);
+  // Walk-ins were seated at the time they arrived, so the booking window and slots don't apply to them.
+  const isWalkIn = existing?.source === "WALK_IN";
+  const problem = (isWalkIn ? null : checkStartTime(minutes, hours, settings.slotMinutes)) ?? checkTables(tables, guest.partySize);
   if (problem) return { error: problem };
 
   const startAt = toInstant(date, minutes);

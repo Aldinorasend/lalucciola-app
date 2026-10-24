@@ -41,6 +41,7 @@ Decision [D-016](../decisions.md): a clean, neutral admin UI built with **shadcn
 |---|---|
 | Booked | blue / default |
 | Seated | green |
+| Walk-in (seated) | violet: calendar and timeline only, so walk-ins stand apart from bookings |
 | Completed | gray / muted |
 | Cancelled | outline / muted, strikethrough |
 | No-show | red / destructive |
