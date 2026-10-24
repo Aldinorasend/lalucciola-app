@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: lalucciola
     ports:
       # 5433 avoids clashing with a locally installed Postgres on 5432
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

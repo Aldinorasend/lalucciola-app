@@ -8,7 +8,7 @@ const db = new PrismaClient({
 });
 
 async function main() {
-  const email = process.env.SEED_OWNER_EMAIL;
+  const email = process.env.SEED_OWNER_EMAIL?.toLowerCase();
   const password = process.env.SEED_OWNER_PASSWORD;
   if (!email || !password) {
     throw new Error("Set SEED_OWNER_EMAIL and SEED_OWNER_PASSWORD (see .env.example).");
