@@ -24,7 +24,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body>
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        {/* Light like the rest of the app until dark mode is built */}
+        <Toaster theme="light" />
       </body>
     </html>
   );
