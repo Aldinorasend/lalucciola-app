@@ -9,6 +9,7 @@ import {
   canTransition,
   checkStartTime,
   checkTables,
+  dayOfWeek,
   parseBookingForm,
   toInstant,
 } from "@/lib/bookings";
@@ -29,10 +30,9 @@ export async function saveBooking(_previous: ActionResult, form: FormData): Prom
   const id = form.get("id") ? String(form.get("id")) : undefined;
 
   const minutes = toMinutes(time);
-  const dayOfWeek = new Date(`${date}T00:00:00Z`).getUTCDay();
   const [settings, hours, tables, existing] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
-    db.openingHours.findUnique({ where: { dayOfWeek } }),
+    db.openingHours.findUnique({ where: { dayOfWeek: dayOfWeek(date) } }),
     db.table.findMany({ where: { id: { in: tableIds } } }),
     id ? db.booking.findUnique({ where: { id }, select: { status: true } }) : null,
   ]);

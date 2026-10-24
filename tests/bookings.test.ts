@@ -67,3 +67,20 @@ test("booking form: phone required except for walk-ins", () => {
   assert.equal(parseBookingForm(form({ guestPhone: "abc" })).success, false);
   assert.equal(parseBookingForm(form({ guestPhone: "0812345678" }, [])).success, false);
 });
+
+test("calendar helpers: shift, weekday, week and month grids", async () => {
+  const { shiftDate, dayOfWeek, weekDates, monthWeeks } = await import("../lib/bookings");
+  assert.equal(shiftDate("2026-10-31", 1), "2026-11-01");
+  assert.equal(shiftDate("2026-03-01", -1), "2026-02-28");
+  assert.equal(dayOfWeek("2026-10-24"), 6);
+  // Saturday 24 Oct 2026 sits in the week Mon 19 – Sun 25
+  assert.deepEqual([weekDates("2026-10-24")[0], weekDates("2026-10-24")[6]], ["2026-10-19", "2026-10-25"]);
+  assert.equal(weekDates("2026-10-19")[0], "2026-10-19");
+  assert.equal(weekDates("2026-10-25")[0], "2026-10-19");
+  // October 2026: Thu 1 to Sat 31 → weeks starting 28 Sep … 26 Oct
+  const october = monthWeeks("2026-10-15");
+  assert.equal(october.length, 5);
+  assert.equal(october[0][0], "2026-09-28");
+  assert.equal(october.at(-1)?.[6], "2026-11-01");
+  assert.ok(october.flat().includes("2026-10-31"));
+});
