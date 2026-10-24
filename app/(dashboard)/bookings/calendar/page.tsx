@@ -142,38 +142,52 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 xl:grid-cols-7">
-          {days.map((day) => {
-            const list = byDay.get(day) ?? [];
-            const covers = list.reduce((sum, booking) => sum + booking.partySize, 0);
-            return (
-              <Card key={day} className="gap-2 py-3">
-                <CardContent className="grid gap-2 px-3">
-                  <Link href={`/bookings/timeline?date=${day}`} className="grid hover:underline">
-                    <span className={`text-sm font-medium ${day === today ? "text-primary" : ""}`}>
-                      {formatDay(day, { weekday: "short", day: "numeric", month: "short" })}
-                      {day === today && " · Today"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {list.length ? `${list.length} · ${covers} covers` : "No bookings"}
-                    </span>
-                  </Link>
-                  {list.map((booking) => (
-                    <div key={booking.id} className="grid gap-0.5 rounded-md bg-muted/40 px-2 py-1 text-xs">
-                      <span className="flex items-center gap-1">
-                        <span className="font-medium tabular-nums">{formatLocalTime(booking.startAt)}</span>
-                        <span className={`size-2 rounded-full ${STATUS_BADGE[booking.status].className}`} title={STATUS_BADGE[booking.status].label} />
+        <div className="grid gap-2">
+          <ul aria-label="Colour key" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {(["BOOKED", "SEATED", "COMPLETED"] as const).map((status) => (
+              <li key={status} className="flex items-center gap-1.5">
+                <span aria-hidden className={`inline-block h-3 w-5 rounded-sm border ${STATUS_BADGE[status].className}`} />
+                {STATUS_BADGE[status].label}
+              </li>
+            ))}
+          </ul>
+          <div className="grid gap-3 xl:grid-cols-7">
+            {days.map((day) => {
+              const list = byDay.get(day) ?? [];
+              const covers = list.reduce((sum, booking) => sum + booking.partySize, 0);
+              return (
+                <Card key={day} className="gap-2 py-3">
+                  <CardContent className="grid gap-2 px-3">
+                    <Link href={`/bookings/timeline?date=${day}`} className="grid hover:underline">
+                      <span className={`text-sm font-medium ${day === today ? "text-primary" : ""}`}>
+                        {formatDay(day, { weekday: "short", day: "numeric", month: "short" })}
+                        {day === today && " · Today"}
                       </span>
-                      <span className="truncate">{booking.guestName}</span>
-                      <span className="text-muted-foreground">
-                        {booking.partySize} · {booking.tables.map((link) => link.table.label).join("+")}
+                      <span className="text-xs text-muted-foreground">
+                        {list.length ? `${list.length} · ${covers} covers` : "No bookings"}
                       </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            );
-          })}
+                    </Link>
+                    {list.map((booking) => (
+                      <div
+                        key={booking.id}
+                        title={STATUS_BADGE[booking.status].label}
+                        className={`grid gap-0.5 rounded-md px-2 py-1 text-xs ${STATUS_BADGE[booking.status].className}`}
+                      >
+                        <span className="font-medium tabular-nums">
+                          {formatLocalTime(booking.startAt)}
+                          <span className="sr-only"> {STATUS_BADGE[booking.status].label}</span>
+                        </span>
+                        <span className="truncate">{booking.guestName}</span>
+                        <span className="opacity-80">
+                          {booking.partySize} · {booking.tables.map((link) => link.table.label).join("+")}
+                        </span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
