@@ -118,3 +118,5 @@ Requires Node 22+ and Docker Desktop (D-041).
 5. `npm run dev` and open http://localhost:3000. Sign in with the seed email and password from `.env`.
 
 Other scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).
+
+**After changing `prisma/schema.prisma`:** run `npm run db:migrate`, then `npx prisma generate` (Prisma 7 no longer generates on migrate), then restart `npm run dev`. If a page still says a model is `undefined`, stop the dev server and delete `.next/`: Turbopack caches the old client on disk.

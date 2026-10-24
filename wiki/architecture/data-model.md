@@ -13,9 +13,9 @@ A draft of the Prisma entities. Field names are indicative. Money is stored as *
 - Auth.js tables (Account, Session, VerificationToken) as required by the adapter
 
 ## Booking module
-- **Area** (shown as "Section" in the UI): id, name (Section 1–4, Section L), sortOrder
+- **Area** ✅ (shown as "Section" in the UI): id, name (unique: Section 1–4, Section L), sortOrder
 - **AreaClosure**: id, areaId, date, servicePeriodId? (null = whole day), reason?, createdById (D-033)
-- **Table**: id, label (string: "101", "1A", "L3"), areaId, minSeats, maxSeats, active, combinable (bool), **posX, posY, width, height, shape (`ROUND | SQUARE | RECT`), rotation**. Seed data comes from [floor-plan](../modules/floor-plan.md#table-list-transcribed-from-the-screenshot).
+- **Table** ✅: id, label (unique string: "101", "1A", "L3"), areaId, minSeats, maxSeats, active, combinable (bool), **posX, posY, shape (`ROUND | SQUARE | RECT`), rotation**. Width and height are not stored; the floor plan derives the size from shape and seats. Seed data comes from [floor-plan](../modules/floor-plan.md#table-list-transcribed-from-the-screenshot).
 - **Booking**
   - id, guestName, guestPhone, partySize
   - startAt (datetime), endAt (datetime; default = start + dining duration)
@@ -26,8 +26,8 @@ A draft of the Prisma entities. Field names are indicative. Money is stored as *
   - createdById → User, timestamps
 - **BookingTable**: bookingId, tableId (many-to-many, so large groups can combine tables)
 - **WaitlistEntry**: id, guestName, guestPhone?, partySize, addedAt, quotedWaitMin?, status `WAITING | SEATED | LEFT`, bookingId? (set when converted to a seated walk-in)
-- **ServicePeriod / OpeningHours** (settings): dayOfWeek, firstBookingAt (default 06:00), lastBookingAt (default 20:00); both within 06:00–20:00 (D-037)
-- **BookingSettings** (single row): slotMinutes (default 15, D-038), diningMinutes (default 90), reservedSoonMinutes, lateGraceMinutes (15)
+- **OpeningHours** ✅: dayOfWeek (0 = Sunday, primary key), firstBookingAt (default 360 = 06:00), lastBookingAt (default 1200 = 20:00). Times are **minutes after midnight, restaurant time**; both within 06:00–20:00 and on slot boundaries (D-037). One row per weekday; separate lunch/dinner periods are not modelled.
+- **BookingSettings** ✅ (single row, id = 1): slotMinutes (default 15, must divide an hour, D-038), diningMinutes (default 90, multiple of the slot), reservedSoonMinutes (default 30), lateGraceMinutes (default 15)
 
 ### Rules enforced on the server
 - No overlapping active bookings (BOOKED/SEATED) on the same table in the same time range.
