@@ -1,6 +1,6 @@
 "use client";
 
-import { renameArea, updateTable } from "@/app/(dashboard)/settings/actions";
+import { closeSection, renameArea, reopenSection, updateTable } from "@/app/(dashboard)/settings/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActionToast } from "@/components/use-action-toast";
 
-type Area = { id: string; name: string };
+type Area = { id: string; name: string; closures: { id: string; date: string; label: string; reason: string | null }[] };
 type TableRow = {
   id: string;
   label: string;
@@ -20,13 +20,14 @@ type TableRow = {
   active: boolean;
 };
 
-export function TablesEditor({ areas, tables }: { areas: Area[]; tables: TableRow[] }) {
+export function TablesEditor({ areas, tables, today }: { areas: Area[]; tables: TableRow[]; today: string }) {
   return (
     <div className="grid gap-6">
       {areas.map((area) => (
         <Card key={area.id}>
           <CardHeader>
             <SectionNameForm area={area} />
+            <SectionClosures area={area} today={today} />
           </CardHeader>
           <CardContent className="grid gap-2">
             <div className="hidden grid-cols-[4rem_5rem_5rem_9rem_7rem_6rem_auto] gap-3 text-xs text-muted-foreground md:grid">
@@ -46,6 +47,42 @@ export function TablesEditor({ areas, tables }: { areas: Area[]; tables: TableRo
         </Card>
       ))}
     </div>
+  );
+}
+
+/** Close this section for a day, and list upcoming closures (D-033). */
+function SectionClosures({ area, today }: { area: Area; today: string }) {
+  const [onClose, closing] = useActionToast(closeSection, `${area.name} closed for that day`);
+  return (
+    <div className="grid gap-2 text-sm">
+      {area.closures.map((closure) => (
+        <ReopenRow key={closure.id} closure={closure} />
+      ))}
+      <form onSubmit={onClose} className="flex flex-wrap items-center gap-2">
+        <input type="hidden" name="areaId" value={area.id} />
+        <Input aria-label={`Date to close ${area.name}`} name="date" type="date" min={today} defaultValue={today} required className="w-40" />
+        <Input aria-label={`Reason for closing ${area.name}`} name="reason" maxLength={200} placeholder="Reason (optional)" className="max-w-56" />
+        <Button type="submit" variant="outline" size="sm" disabled={closing}>
+          Close section that day
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function ReopenRow({ closure }: { closure: Area["closures"][number] }) {
+  const [onReopen, reopening] = useActionToast(reopenSection, "Section reopened");
+  return (
+    <form onSubmit={onReopen} className="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="id" value={closure.id} />
+      <Badge variant="outline" className="border-destructive text-destructive">
+        Closed {closure.label}
+      </Badge>
+      {closure.reason && <span className="text-muted-foreground">{closure.reason}</span>}
+      <Button type="submit" variant="ghost" size="sm" disabled={reopening}>
+        Reopen
+      </Button>
+    </form>
   );
 }
 
