@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { UserPlus } from "lucide-react";
 import { seatWalkIn } from "@/app/(dashboard)/bookings/actions";
 import { Button } from "@/components/ui/button";
@@ -10,17 +10,30 @@ import { Label } from "@/components/ui/label";
 import { useActionToast } from "@/components/use-action-toast";
 
 /** Quick walk-in: seats a party at this table now (wiki/modules/booking.md). */
-export function WalkInButton({ tableId, tableLabel, maxSeats }: { tableId: string; tableLabel: string; maxSeats: number }) {
+export function WalkInButton({
+  tableId,
+  tableLabel,
+  maxSeats,
+  children,
+}: {
+  tableId: string;
+  tableLabel: string;
+  maxSeats: number;
+  /** Custom trigger, e.g. a table on the floor plan. Defaults to a "Seat walk-in" button. */
+  children?: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [onSubmit, pending] = useActionToast(seatWalkIn, `Walk-in seated at table ${tableLabel}`, () => setOpen(false));
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <UserPlus />
-          Seat walk-in
-        </Button>
+        {children ?? (
+          <Button size="sm" variant="outline">
+            <UserPlus />
+            Seat walk-in
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
