@@ -55,6 +55,13 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 - **Source** in this form is Phone, WhatsApp or Other. Walk-ins get their own quick flow in Phase 2.
 - **Server checks:** start time on a slot within that weekday's hours; party fits the chosen tables; only combinable tables can be joined; no overlap with another BOOKED/SEATED booking on the same table.
 
+## Built in Phase 1c
+- **Timeline page** has a **Grid** (default) and a **List** view, kept in the URL (`?view=list`, `?date=`).
+  - Grid: tables grouped by section down the side, the booking window plus one dining duration across, hour lines, a red "now" line today. Bookings are bars (Booked blue, Seated green, Completed grey, Late with an amber ring); a booking on several tables shows on each. Cancelled and no-show bookings are hidden because they free the table. Clicking a bar opens the same actions menu as the list.
+  - The grid scrolls sideways inside its box; table names and section names stay pinned on the left.
+- **Calendar page** has **Week** (default; one card per day with each booking's time, guest, party and tables) and **Month** (day cells with booking and cover counts). **Day** opens the Timeline for that date; every day links there too. Cancelled and no-show bookings are left out. Weeks run Monday to Sunday.
+- **Not built yet:** clicking an empty grid cell to start a booking at that table and time.
+
 ## Views (D-007)
 | View | Route | Purpose |
 |---|---|---|
