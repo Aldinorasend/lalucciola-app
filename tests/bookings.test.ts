@@ -84,3 +84,33 @@ test("calendar helpers: shift, weekday, week and month grids", async () => {
   assert.equal(october.at(-1)?.[6], "2026-11-01");
   assert.ok(october.flat().includes("2026-10-31"));
 });
+
+test("table state: seated beats booked; soon within the window or when late", async () => {
+  const { tableState } = await import("../lib/bookings");
+  const now = toInstant("2026-10-24", 19 * 60);
+  const at = (minutes: number) => toInstant("2026-10-24", minutes);
+  const b = (status: "BOOKED" | "SEATED", start: number, end = start + 90) => ({ status, startAt: at(start), endAt: at(end) });
+  assert.equal(tableState([], now, 30).state, "FREE");
+  assert.equal(tableState([b("BOOKED", 20 * 60)], now, 30).state, "FREE");
+  assert.equal(tableState([b("BOOKED", 20 * 60)], now, 30).next?.startAt.toISOString(), at(1200).toISOString());
+  assert.equal(tableState([b("BOOKED", 19 * 60 + 30)], now, 30).state, "SOON");
+  assert.equal(tableState([b("BOOKED", 18 * 60 + 45)], now, 30).state, "SOON"); // late, not arrived
+  assert.equal(tableState([b("BOOKED", 17 * 60, 18 * 60 + 30)], now, 30).state, "FREE"); // window passed
+  assert.equal(tableState([b("BOOKED", 19 * 60 + 15), b("SEATED", 18 * 60)], now, 30).state, "SEATED");
+});
+
+test("walk-in form: name defaults, phone optional, tables required", async () => {
+  const { parseWalkInForm } = await import("../lib/bookings");
+  const form = (fields: Record<string, string>, tables = ["t1"]) => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries({ partySize: "2", ...fields })) data.set(key, value);
+    for (const id of tables) data.append("tableIds", id);
+    return data;
+  };
+  const ok = parseWalkInForm(form({ guestName: " " }));
+  assert.ok(ok.success);
+  assert.equal(ok.data.guestName, "Walk-in");
+  assert.equal(ok.data.guestPhone, undefined);
+  assert.equal(parseWalkInForm(form({}, [])).success, false);
+  assert.equal(parseWalkInForm(form({ partySize: "0" })).success, false);
+});
