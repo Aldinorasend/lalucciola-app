@@ -8,6 +8,8 @@ updated: 2026-10-24
 
 **Owner/Admin only** (see [roles-permissions](../architecture/roles-permissions.md)). It is organized in tabs.
 
+**Built so far (Phase 1a):** the *Booking hours* tab (slot length, dining duration, reserved-soon and late thresholds, first/last booking time per weekday) and the *Sections & tables* tab (rename sections; per table: min/max seats, section, combinable, active). Validation lives in `lib/booking-settings.ts` and runs on the server. **Not built yet:** General, Inventory and Users & roles tabs, adding tables, section closures, and the floor-plan editor.
+
 | Tab | Contents |
 |---|---|
 | General | Restaurant name, time zone (`Asia/Jakarta`, D-028), currency (IDR, fixed). Single location only (D-029). |

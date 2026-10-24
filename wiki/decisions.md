@@ -145,3 +145,6 @@ GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and
 
 **D-045 — Sessions re-checked against the database** · 2026-10-24 · Accepted (refines D-042)
 `getCurrentUser()` loads the user on every request and uses the database role. A deactivated user is sent to `/login` at once instead of keeping access until the 12 h cookie expires. Because that user still holds a cookie, `proxy.ts` no longer redirects signed-in visitors away from `/login`.
+
+**D-046 — Phase 1 ships as three PRs; booking hours stored as minutes per weekday** · 2026-10-24 · Accepted
+Phase 1 is split into 1a (settings: sections, tables, hours, slots), 1b (booking create/edit, statuses, availability) and 1c (timeline and calendar), so each PR stays reviewable. Booking hours are one row per weekday, stored as minutes after midnight in restaurant time; lunch/dinner periods aren't modelled until the owner asks for them. Re-running the seed only creates missing rows, so the owner's edits in Settings survive.

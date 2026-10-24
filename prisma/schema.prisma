@@ -26,3 +26,51 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// Booking settings: wiki/modules/settings.md, wiki/modules/floor-plan.md
+
+enum TableShape {
+  ROUND
+  SQUARE
+  RECT
+}
+
+// Shown as "Section" in the UI.
+model Area {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  sortOrder Int     @default(0)
+  tables    Table[]
+}
+
+model Table {
+  id         String     @id @default(cuid())
+  label      String     @unique
+  areaId     String
+  area       Area       @relation(fields: [areaId], references: [id])
+  minSeats   Int        @default(1)
+  maxSeats   Int
+  combinable Boolean    @default(false)
+  active     Boolean    @default(true)
+  // Floor plan position on the reference canvas (wiki/modules/floor-plan.md)
+  posX       Int        @default(0)
+  posY       Int        @default(0)
+  shape      TableShape @default(SQUARE)
+  rotation   Int        @default(0)
+}
+
+// Booking start window per weekday, in minutes after midnight (restaurant time).
+model OpeningHours {
+  dayOfWeek      Int     @id // 0 = Sunday … 6 = Saturday
+  firstBookingAt Int     @default(360) // 06:00
+  lastBookingAt  Int     @default(1200) // 20:00
+}
+
+// Single row (id = 1).
+model BookingSettings {
+  id                  Int @id @default(1)
+  slotMinutes         Int @default(15)
+  diningMinutes       Int @default(90)
+  reservedSoonMinutes Int @default(30)
+  lateGraceMinutes    Int @default(15)
+}
