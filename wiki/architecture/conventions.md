@@ -95,7 +95,7 @@ feature/…       ●──●     ●──●                  one branch per 
 ### Pull request checklist
 - [ ] Targets `dev` (or `main` only for a release PR or `hotfix/*`)
 - [ ] Description covers what changed, why, and how it was tested
-- [ ] CI is green: lint, typecheck and build (D-044). Run them locally first with `npm run lint`, `npm run typecheck`, `npm run build`
+- [ ] CI is green: lint, typecheck, test and build (D-044). Run them locally first with `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`
 - [ ] Wiki updated in the same PR when a requirement or decision changes (page + [decisions](../decisions.md) + [log](../log.md))
 - [ ] Database changes come with a Prisma migration
 
@@ -112,9 +112,9 @@ feature/…       ●──●     ●──●                  one branch per 
 Requires Node 22+ and Docker Desktop (D-041).
 
 1. `npm install` (also generates the Prisma client)
-2. Copy `.env.example` to `.env` and set `AUTH_SECRET` (`npx auth secret` prints one).
+2. Copy `.env.example` to `.env`. Set `AUTH_SECRET` (`npx auth secret` prints one) and `SEED_OWNER_PASSWORD`; set `SEED_DEMO_PASSWORD` too if you want demo Manager/Staff accounts. Never use these dev passwords in production.
 3. `npm run db:up` starts Postgres 17 on **localhost:5433**.
 4. `npm run db:migrate` applies migrations, and `npm run db:seed` creates the Owner (plus demo Manager/Staff if `SEED_DEMO_PASSWORD` is set).
 5. `npm run dev` and open http://localhost:3000. Sign in with the seed email and password from `.env`.
 
-Other scripts: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).
+Other scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run db:studio`, `npm run db:deploy` (production migrations).

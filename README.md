@@ -12,7 +12,7 @@ Requires Node 22+ and Docker Desktop.
 
 ```bash
 npm install
-cp .env.example .env        # then set AUTH_SECRET (npx auth secret)
+cp .env.example .env        # then set AUTH_SECRET (npx auth secret) and SEED_OWNER_PASSWORD
 npm run db:up               # Postgres 17 on localhost:5433
 npm run db:migrate
 npm run db:seed             # creates the Owner account from .env
@@ -25,7 +25,7 @@ Open http://localhost:3000 and sign in with the seed account from `.env`.
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` / `npm start` | Production build / server |
-| `npm run lint` / `npm run typecheck` | ESLint / TypeScript checks |
+| `npm run lint` / `npm run typecheck` / `npm test` | ESLint / TypeScript / unit tests |
 | `npm run db:migrate` | Create and apply migrations (development) |
 | `npm run db:deploy` | Apply migrations (production) |
 | `npm run db:seed` | Seed the Owner (and optional demo users) |

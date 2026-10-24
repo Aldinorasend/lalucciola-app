@@ -40,8 +40,8 @@ Check every API against those docs. Don't rely on memory of Next 13–15.
 |---|---|
 | `auth.config.ts` | Shared config: sign-in page, JWT callbacks (id + role), `authorized` redirect rule. No database imports. |
 | `auth.ts` | Full Auth.js setup with the Credentials provider (Prisma + bcrypt). Exports `auth`, `signIn`, `signOut`. |
-| `proxy.ts` | Next 16 proxy (formerly middleware): sends signed-out visitors to `/login` and signed-in users away from it. |
-| `lib/dal.ts` | Data Access Layer: `getCurrentUser()`, `hasPermission()`. |
+| `proxy.ts` | Next 16 proxy (formerly middleware): sends signed-out visitors to `/login`. |
+| `lib/dal.ts` | Data Access Layer: `getCurrentUser()`, `hasPermission()`. Re-reads the user from the database on every request, so deactivation and role changes apply at once (D-045). |
 | `lib/permissions.ts` | Role × permission matrix (`can(role, permission)`), mirroring [roles-permissions](roles-permissions.md). |
 | `app/login/actions.ts` | `login` / `logout` server actions. |
 
@@ -56,6 +56,8 @@ Decision D-035: the app and Postgres run on the owner's VPS. Proposed setup (det
 - PostgreSQL on the same VPS, bound to localhost only.
 - `prisma migrate deploy` runs on every release.
 - **Daily `pg_dump` backups** copied off the server.
+- **Rate-limit `POST /login`** in the reverse proxy (e.g. Nginx `limit_req` or Caddy `rate_limit`, about 5 per minute per IP) against password guessing.
+- Set real values for `AUTH_SECRET` and `SEED_OWNER_PASSWORD` on the server; leave `SEED_DEMO_PASSWORD` empty.
 - Check the Next 16 self-hosting guide in `node_modules/next/dist/docs/` before setting this up.
 
 ## Environment
