@@ -1,11 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import type { ActionResult } from "@/components/use-action-toast";
 import { areaNameSchema, parseBookingHoursForm, tableSchema } from "@/lib/booking-settings";
 import { hasPermission } from "@/lib/dal";
 import { db } from "@/lib/db";
 
-export type ActionResult = { ok?: boolean; error?: string } | undefined;
 
 const NO_ACCESS = { error: "Only the owner can change settings." };
 

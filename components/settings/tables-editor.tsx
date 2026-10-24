@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useActionToast } from "./use-action-toast";
+import { useActionToast } from "@/components/use-action-toast";
 
 type Area = { id: string; name: string };
 type TableRow = {
