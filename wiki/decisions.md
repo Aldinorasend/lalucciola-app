@@ -141,4 +141,7 @@ Auth.js v5 (beta.32) with the Credentials provider (email + bcrypt-hashed passwo
 npm's `latest` tag points to a Prisma 8 release candidate. We stay on stable 7.10.1 with the `@prisma/adapter-pg` driver adapter, and upgrade deliberately in its own PR.
 
 **D-044 — CI on every PR and push to dev/main** · 2026-10-24 · Accepted
-GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck and build on Node 22 for pull requests and pushes to `dev` and `main`. A PR merges only when CI is green. Make the `Lint, typecheck, build` check required in branch protection. → [conventions](architecture/conventions.md#pull-request-checklist)
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and build on Node 22 for pull requests and pushes to `dev` and `main`. A PR merges only when CI is green. Make the `Lint, typecheck, build` check required in branch protection. → [conventions](architecture/conventions.md#pull-request-checklist)
+
+**D-045 — Sessions re-checked against the database** · 2026-10-24 · Accepted (refines D-042)
+`getCurrentUser()` loads the user on every request and uses the database role. A deactivated user is sent to `/login` at once instead of keeping access until the 12 h cookie expires. Because that user still holds a cookie, `proxy.ts` no longer redirects signed-in visitors away from `/login`.
