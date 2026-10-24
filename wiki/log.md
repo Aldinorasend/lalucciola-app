@@ -19,3 +19,4 @@ Append-only, newest at the bottom. One line per change: `YYYY-MM-DD — what cha
 - 2026-10-24 — Phase 1a built: sections, tables (40 seeded from the floor plan), booking hours and slots in Settings; added D-046; updated data-model, settings, roadmap and the schema-change steps in conventions.
 - 2026-10-24 — Phase 1b built: Booking and BookingTable models, booking rules with tests, create/edit booking with a live table picker, status actions, and a day list on the Timeline page; added D-047; updated booking, data-model and roadmap.
 - 2026-10-24 — Phase 1c built: timeline grid (tables × time) with clickable bars, Grid/List switch, and the Calendar week and month views; Phase 1 (booking core) complete; updated booking and roadmap.
+- 2026-10-24 — Phase 2a built: tables display with live states, filters and auto-refresh; walk-ins seated from a free table; Phase 2 split into 2a/2b/2c; updated floor-plan, booking and roadmap.

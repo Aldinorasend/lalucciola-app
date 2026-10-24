@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { BookingRow } from "@/components/bookings/booking-row";
+import { toBookingRow } from "@/components/bookings/status";
 import { TimelineGrid } from "@/components/bookings/timeline-grid";
 import { NewBookingButton } from "@/components/bookings/new-booking-button";
 import { RequirePermission } from "@/components/require-permission";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toTime } from "@/lib/booking-settings";
-import { dayOfWeek, formatDay, formatLocalTime, isLate, localParts, shiftDate, toInstant } from "@/lib/bookings";
+import { dayOfWeek, formatDay, localParts, shiftDate, toInstant } from "@/lib/bookings";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Timeline" };
@@ -68,19 +69,7 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
     const start = localParts(booking.startAt);
     const end = localParts(booking.endAt);
     return {
-      id: booking.id,
-      guestName: booking.guestName,
-      guestPhone: booking.guestPhone ?? "",
-      partySize: booking.partySize,
-      date: start.date,
-      time: toTime(start.minutes),
-      endTime: formatLocalTime(booking.endAt),
-      source: booking.source,
-      notes: booking.notes ?? "",
-      status: booking.status,
-      late: isLate(booking, now, settings.lateGraceMinutes),
-      tableIds: booking.tables.map((link) => link.tableId),
-      tableLabels: booking.tables.map((link) => link.table.label),
+      ...toBookingRow(booking, now, settings.lateGraceMinutes),
       startMinutes: start.minutes,
       // A booking that runs past midnight is drawn up to the end of the day.
       endMinutes: end.date === date ? end.minutes : 24 * 60,
