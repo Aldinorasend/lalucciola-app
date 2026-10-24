@@ -39,18 +39,20 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
   const today = localParts(now).date;
   const date = typeof requested === "string" && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : today;
 
+  const dayRange = { gte: toInstant(date, 0), lt: toInstant(shiftDate(date, 1), 0) };
   const [settings, hours, bookings, tables] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
     db.openingHours.findUnique({ where: { dayOfWeek: dayOfWeek(date) } }),
     db.booking.findMany({
-      where: { startAt: { gte: toInstant(date, 0), lt: toInstant(shiftDate(date, 1), 0) } },
+      where: { startAt: dayRange },
       orderBy: { startAt: "asc" },
       include: { tables: { select: { tableId: true, table: { select: { label: true } } } } },
     }),
     db.table.findMany({
-      where: { active: true },
+      // Switched-off tables still show when they hold a booking that day, so no guest goes missing.
+      where: { OR: [{ active: true }, { bookings: { some: { booking: { startAt: dayRange } } } }] },
       orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
-      select: { id: true, label: true, area: { select: { name: true } } },
+      select: { id: true, label: true, active: true, area: { select: { name: true } } },
     }),
   ]);
   if (!settings || !hours) {
@@ -137,7 +139,7 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
 
       {view === "grid" ? (
         <TimelineGrid
-          tables={tables.map((table) => ({ id: table.id, label: table.label, section: table.area.name }))}
+          tables={tables.map((table) => ({ id: table.id, label: table.active ? table.label : `${table.label} (off)`, section: table.area.name }))}
           bookings={rows}
           windowStart={windowStart}
           windowEnd={windowEnd}

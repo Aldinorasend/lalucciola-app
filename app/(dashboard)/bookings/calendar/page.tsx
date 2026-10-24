@@ -142,7 +142,7 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 md:grid-cols-7">
+        <div className="grid gap-3 xl:grid-cols-7">
           {days.map((day) => {
             const list = byDay.get(day) ?? [];
             const covers = list.reduce((sum, booking) => sum + booking.partySize, 0);
