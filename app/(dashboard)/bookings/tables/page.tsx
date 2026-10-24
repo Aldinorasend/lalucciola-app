@@ -11,20 +11,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatLocalTime, localParts, shiftDate, type TableState, tableState, toInstant } from "@/lib/bookings";
+import { closedAreas } from "@/lib/booking-writes";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Tables" };
 
-const STATES: Record<TableState, { label: string; badge: string; card: string }> = {
+type CardState = TableState | "CLOSED";
+
+const STATES: Record<CardState, { label: string; badge: string; card: string }> = {
   FREE: { label: "Free", badge: "border-emerald-600 bg-transparent text-emerald-700 dark:text-emerald-400", card: "" },
   SOON: { label: "Reserved soon", badge: "bg-amber-500 text-white", card: "border-amber-500/60" },
   SEATED: { label: "Seated", badge: "bg-emerald-600 text-white", card: "border-emerald-600/60 bg-emerald-600/5" },
+  CLOSED: { label: "Closed", badge: "bg-muted text-muted-foreground", card: "bg-muted/50 opacity-70" },
 };
 const FILTERS = [
   { value: "", label: "All" },
   { value: "FREE", label: "Free" },
   { value: "SOON", label: "Reserved soon" },
   { value: "SEATED", label: "Seated" },
+  { value: "CLOSED", label: "Closed" },
 ];
 
 // Live status of every table right now (wiki/modules/floor-plan.md#tables-display-bookingstables).
@@ -49,8 +54,9 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
   const now = new Date();
   const today = localParts(now).date;
 
-  const [settings, tables] = await Promise.all([
+  const [settings, closed, tables] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
+    closedAreas(today),
     db.table.findMany({
       where: { active: true },
       orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
@@ -58,6 +64,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
         id: true,
         label: true,
         maxSeats: true,
+        areaId: true,
         area: { select: { name: true } },
         // Active bookings still running now or starting later today.
         bookings: {
@@ -85,9 +92,13 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
   ]);
   if (!settings) return <p className="text-sm text-destructive">Booking settings are missing. Run `npm run db:seed`.</p>;
 
-  const cards = tables.map((table) => ({ ...table, ...tableState(table.bookings.map((link) => link.booking), now, settings.reservedSoonMinutes) }));
-  const counts = Object.fromEntries((["FREE", "SOON", "SEATED"] as const).map((state) => [state, cards.filter((card) => card.state === state).length]));
-  const status = typeof requestedStatus === "string" && requestedStatus in STATES ? (requestedStatus as TableState) : null;
+  const cards = tables.map((table) => {
+    const live = tableState(table.bookings.map((link) => link.booking), now, settings.reservedSoonMinutes);
+    // A closed section can't hold active bookings (closing is refused while it has any), so Closed wins.
+    return { ...table, ...live, state: (closed.has(table.areaId) ? "CLOSED" : live.state) as CardState };
+  });
+  const counts = Object.fromEntries((["FREE", "SOON", "SEATED", "CLOSED"] as const).map((state) => [state, cards.filter((card) => card.state === state).length]));
+  const status = typeof requestedStatus === "string" && requestedStatus in STATES ? (requestedStatus as CardState) : null;
   const sections = [...new Set(cards.map((card) => card.area.name))];
   const section = typeof requestedSection === "string" && sections.includes(requestedSection) ? requestedSection : null;
   const shown = cards.filter((card) => (!status || card.state === status) && (!section || card.area.name === section));
@@ -166,6 +177,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                               </div>
                             </>
                           )}
+                          {card.state === "CLOSED" && <div className="text-xs text-muted-foreground">Section closed today</div>}
                           {card.state === "FREE" && (
                             <div className="text-xs text-muted-foreground">
                               {card.next ? `Next: ${card.next.guestName}, ${formatLocalTime(card.next.startAt)}` : "No more bookings today"}
@@ -173,7 +185,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                           )}
                         </div>
 
-                        {card.state === "FREE" ? (
+                        {card.state === "CLOSED" ? null : card.state === "FREE" ? (
                           <WalkInButton tableId={card.id} tableLabel={card.label} maxSeats={card.maxSeats} />
                         ) : (
                           row && (
