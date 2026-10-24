@@ -148,3 +148,6 @@ GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and
 
 **D-046 — Phase 1 ships as three PRs; booking hours stored as minutes per weekday** · 2026-10-24 · Accepted
 Phase 1 is split into 1a (settings: sections, tables, hours, slots), 1b (booking create/edit, statuses, availability) and 1c (timeline and calendar), so each PR stays reviewable. Booking hours are one row per weekday, stored as minutes after midnight in restaurant time; lunch/dinner periods aren't modelled until the owner asks for them. Re-running the seed only creates missing rows, so the owner's edits in Settings survive.
+
+**D-047 — Double bookings prevented in the database transaction** · 2026-10-24 · Accepted
+Saving a booking takes a Postgres advisory lock per chosen table (sorted, to avoid deadlocks), re-checks for overlapping BOOKED/SEATED bookings, then writes, all in one transaction. Two staff booking the same table at the same moment can't both succeed. Status changes only apply if the status hasn't changed in the meantime. Restaurant time is a fixed UTC+7 offset (Asia/Jakarta has no daylight saving), marked as a `shortcut:` in `lib/bookings.ts`.

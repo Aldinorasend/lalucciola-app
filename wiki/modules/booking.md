@@ -48,6 +48,13 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 - **Walk-in:** a quick form (name, party size, optional phone) that seats the party at a free table immediately. Source = `WALK_IN`.
 - **Waitlist:** when no table is free, add the party (name, size, phone, quoted wait). Staff can then **Seat** them (which converts the entry into a walk-in booking) or mark them **Left**. Wait time is shown live.
 
+## Built in Phase 1b (D-047)
+- **Day list** at `/bookings/timeline?date=YYYY-MM-DD`: bookings in time order with status badges, Late badge, covers count, and previous/next/today navigation. The table × time grid and the calendar come in 1c.
+- **New / edit booking** in a side sheet. The table picker shows every active table by section and crosses out the ones taken at the chosen time (with the guest's name). Only BOOKED or SEATED bookings can be edited.
+- **Status actions:** Seat, Complete, Mark no-show (also a one-click button on Late bookings), Cancel (asks for a reason).
+- **Source** in this form is Phone, WhatsApp or Other. Walk-ins get their own quick flow in Phase 2.
+- **Server checks:** start time on a slot within that weekday's hours; party fits the chosen tables; only combinable tables can be joined; no overlap with another BOOKED/SEATED booking on the same table.
+
 ## Views (D-007)
 | View | Route | Purpose |
 |---|---|---|

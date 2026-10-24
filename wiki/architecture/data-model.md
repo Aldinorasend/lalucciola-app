@@ -16,7 +16,7 @@ A draft of the Prisma entities. Field names are indicative. Money is stored as *
 - **Area** ✅ (shown as "Section" in the UI): id, name (unique: Section 1–4, Section L), sortOrder
 - **AreaClosure**: id, areaId, date, servicePeriodId? (null = whole day), reason?, createdById (D-033)
 - **Table** ✅: id, label (unique string: "101", "1A", "L3"), areaId, minSeats, maxSeats, active, combinable (bool), **posX, posY, shape (`ROUND | SQUARE | RECT`), rotation**. Width and height are not stored; the floor plan derives the size from shape and seats. Seed data comes from [floor-plan](../modules/floor-plan.md#table-list-transcribed-from-the-screenshot).
-- **Booking**
+- **Booking** ✅ (times stored as `timestamptz`, indexed on `startAt`)
   - id, guestName, guestPhone, partySize
   - startAt (datetime), endAt (datetime; default = start + dining duration)
   - status: `BOOKED | SEATED | COMPLETED | CANCELLED | NO_SHOW`
@@ -24,7 +24,7 @@ A draft of the Prisma entities. Field names are indicative. Money is stored as *
   - seatedAt?, completedAt?, cancelledAt?, cancelReason?
   - notes? (short internal note; *not* a special-requests feature)
   - createdById → User, timestamps
-- **BookingTable**: bookingId, tableId (many-to-many, so large groups can combine tables)
+- **BookingTable** ✅: bookingId, tableId (many-to-many, so large groups can combine tables)
 - **WaitlistEntry**: id, guestName, guestPhone?, partySize, addedAt, quotedWaitMin?, status `WAITING | SEATED | LEFT`, bookingId? (set when converted to a seated walk-in)
 - **OpeningHours** ✅: dayOfWeek (0 = Sunday, primary key), firstBookingAt (default 360 = 06:00), lastBookingAt (default 1200 = 20:00). Times are **minutes after midnight, restaurant time**; both within 06:00–20:00 and on slot boundaries (D-037). One row per weekday; separate lunch/dinner periods are not modelled.
 - **BookingSettings** ✅ (single row, id = 1): slotMinutes (default 15, must divide an hour, D-038), diningMinutes (default 90, multiple of the slot), reservedSoonMinutes (default 30), lateGraceMinutes (default 15)
