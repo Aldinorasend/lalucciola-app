@@ -1,0 +1,17 @@
+# Local development database only. Production runs Postgres directly on the VPS.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lalucciola
+      POSTGRES_PASSWORD: lalucciola_dev
+      POSTGRES_DB: lalucciola
+    ports:
+      # 5433 avoids clashing with a locally installed Postgres on 5432
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

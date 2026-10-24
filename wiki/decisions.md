@@ -127,3 +127,18 @@ Slots are 15 min, matching the reference screenshot. The dining duration default
 
 **D-039 — No cover limit; book until the room is full** · 2026-10-24 · Accepted (supersedes D-018 and the slot-capacity part of D-006)
 There is no per-slot cover cap. A booking is allowed whenever a free table (or combinable set of tables) fits the party at that time. Capacity comes from table availability alone.
+
+**D-040 — Branching: main = production, dev = integration, feature branches** · 2026-10-24 · Accepted
+`main` holds only released, production-ready code. `dev` is where finished work is integrated. Every roadmap phase, feature, fix and wiki change gets its own branch off `dev` and returns to it **only through a pull request**; nobody pushes directly to `dev` or `main`. A release is a PR from `dev` into `main`. → [conventions](architecture/conventions.md#git-branching)
+
+**D-041 — Local dev database via Docker Compose** · 2026-10-24 · Accepted
+Postgres 17 runs in Docker on port 5433, to avoid clashing with a locally installed Postgres on 5432. It mirrors the planned VPS setup (D-035). → [conventions](architecture/conventions.md#local-development)
+
+**D-042 — Auth implementation** · 2026-10-24 · Accepted (implements D-015)
+Auth.js v5 (beta.32) with the Credentials provider (email + bcrypt-hashed password) and JWT sessions that expire after 12 h; the role is stored in the token. `proxy.ts` only redirects signed-out visitors. Real checks run on the server through `lib/dal.ts` and the `RequirePermission` component. Inactive users can't sign in. → [tech-stack](architecture/tech-stack.md#auth--sessions)
+
+**D-043 — Prisma pinned to 7.10 (stable)** · 2026-10-24 · Accepted
+npm's `latest` tag points to a Prisma 8 release candidate. We stay on stable 7.10.1 with the `@prisma/adapter-pg` driver adapter, and upgrade deliberately in its own PR.
+
+**D-044 — CI on every PR and push to dev/main** · 2026-10-24 · Accepted
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck and build on Node 22 for pull requests and pushes to `dev` and `main`. A PR merges only when CI is green. Make the `Lint, typecheck, build` check required in branch protection. → [conventions](architecture/conventions.md#pull-request-checklist)
