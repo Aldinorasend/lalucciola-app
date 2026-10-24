@@ -8,11 +8,9 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      const signedIn = !!auth?.user;
-      if (nextUrl.pathname === "/login") {
-        return signedIn ? Response.redirect(new URL("/", nextUrl)) : true;
-      }
-      return signedIn;
+      // /login stays reachable with a cookie: a deactivated user still has one,
+      // and lib/dal.ts sends them here.
+      return nextUrl.pathname === "/login" || !!auth?.user;
     },
     jwt({ token, user }) {
       if (user) {
