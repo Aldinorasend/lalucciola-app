@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "./login-form";
@@ -13,7 +14,10 @@ export default function LoginPage() {
           <CardDescription>Sign in with your staff account.</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          {/* LoginForm reads the URL (callbackUrl), so it renders behind a boundary */}
+          <Suspense>
+            <LoginForm />
+          </Suspense>
         </CardContent>
       </Card>
     </main>
