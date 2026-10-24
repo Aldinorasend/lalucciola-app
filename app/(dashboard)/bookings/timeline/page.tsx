@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { BookingRow } from "@/components/bookings/booking-row";
 import { NewBookingButton } from "@/components/bookings/new-booking-button";
 import { RequirePermission } from "@/components/require-permission";
@@ -79,11 +79,6 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
               <ChevronRight />
             </Link>
           </Button>
-          {date !== today && (
-            <Button variant="ghost" asChild>
-              <Link href="?">Today</Link>
-            </Button>
-          )}
           <div className="ml-2">
             <div className="font-medium">{formatDay(date)}</div>
             <div className="text-sm text-muted-foreground">
@@ -92,7 +87,18 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
             </div>
           </div>
         </div>
-        <NewBookingButton date={date} time={defaultTime} slotMinutes={settings.slotMinutes} />
+        <div className="flex items-center gap-2">
+          {/* Kept away from the date heading so it never reads as a label for the shown day */}
+          {date !== today && (
+            <Button variant="outline" asChild>
+              <Link href="?">
+                <CalendarDays />
+                Go to today
+              </Link>
+            </Button>
+          )}
+          <NewBookingButton date={date} time={defaultTime} slotMinutes={settings.slotMinutes} />
+        </div>
       </div>
 
       <Card>
