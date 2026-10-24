@@ -85,7 +85,7 @@ export function TimelineGrid({
                       {shown
                         .filter((booking) => booking.tableIds.includes(table.id))
                         .map((booking) => {
-                          const label = `${booking.time}–${booking.endTime} ${booking.guestName}, ${booking.partySize} guests`;
+                          const label = `${booking.time}–${booking.endTime} ${booking.guestName}, ${booking.partySize} ${booking.partySize === 1 ? "guest" : "guests"}`;
                           const bar = (
                             <button
                               type="button"
