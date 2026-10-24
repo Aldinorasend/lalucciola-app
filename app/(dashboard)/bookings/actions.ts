@@ -10,11 +10,12 @@ import {
   checkStartTime,
   checkTables,
   dayOfWeek,
+  localParts,
   parseBookingForm,
   parseWalkInForm,
   toInstant,
 } from "@/lib/bookings";
-import { writeBooking } from "@/lib/booking-writes";
+import { closedAreas, writeBooking } from "@/lib/booking-writes";
 import { getCurrentUser, hasPermission } from "@/lib/dal";
 import { db } from "@/lib/db";
 
@@ -47,6 +48,9 @@ export async function saveBooking(_previous: ActionResult, form: FormData): Prom
   const isWalkIn = existing?.source === "WALK_IN";
   const problem = (isWalkIn ? null : checkStartTime(minutes, hours, settings.slotMinutes)) ?? checkTables(tables, guest.partySize);
   if (problem) return { error: problem };
+  const closed = await closedAreas(date);
+  const shut = tables.find((table) => closed.has(table.areaId));
+  if (shut) return { error: `${closed.get(shut.areaId)} is closed on that day.` };
 
   const startAt = toInstant(date, minutes);
   const endAt = new Date(startAt.getTime() + settings.diningMinutes * 60_000);
@@ -106,12 +110,14 @@ export async function getTableOptions(date: string, time: string, excludeBooking
 
   const startAt = toInstant(date, minutes);
   const endAt = new Date(startAt.getTime() + settings.diningMinutes * 60_000);
+  const closed = await closedAreas(date);
   const tables = await db.table.findMany({
     where: { active: true },
     orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
     select: {
       id: true,
       label: true,
+      areaId: true,
       maxSeats: true,
       combinable: true,
       area: { select: { name: true } },
@@ -132,7 +138,11 @@ export async function getTableOptions(date: string, time: string, excludeBooking
     section: table.area.name,
     maxSeats: table.maxSeats,
     combinable: table.combinable,
-    busyWith: table.bookings[0]?.booking.guestName ?? null,
+    busyWith: closed.has(table.areaId)
+      ? "Section closed that day"
+      : table.bookings[0]
+        ? `Booked: ${table.bookings[0].booking.guestName}`
+        : null,
   }));
 }
 
@@ -153,6 +163,9 @@ export async function seatWalkIn(_previous: ActionResult, form: FormData): Promi
   if (tables.length !== tableIds.length) return { error: "A chosen table no longer exists. Reload and try again." };
   const problem = checkTables(tables, guest.partySize);
   if (problem) return { error: problem };
+  const closed = await closedAreas(localParts(new Date()).date);
+  const shut = tables.find((table) => closed.has(table.areaId));
+  if (shut) return { error: `${closed.get(shut.areaId)} is closed today.` };
 
   // Walk-ins are already here, so booking hours and slots don't apply.
   const startAt = new Date(Math.floor(Date.now() / 60_000) * 60_000);

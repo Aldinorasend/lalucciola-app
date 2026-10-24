@@ -139,7 +139,7 @@ export function BookingForm({ initial, slotMinutes, onDone }: { initial: Booking
                     return (
                       <label
                         key={table.id}
-                        title={busy ? `Booked: ${table.busyWith}` : `${table.maxSeats} seats${table.combinable ? ", combinable" : ""}`}
+                        title={busy ? (table.busyWith ?? "") : `${table.maxSeats} seats${table.combinable ? ", combinable" : ""}`}
                         className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm ${busy ? "cursor-not-allowed opacity-50 line-through" : ""}`}
                       >
                         <Checkbox
@@ -158,7 +158,7 @@ export function BookingForm({ initial, slotMinutes, onDone }: { initial: Booking
             </div>
           ))
         )}
-        <p className="text-xs text-muted-foreground">Crossed-out tables are taken at this time. Only combinable tables can be joined.</p>
+        <p className="text-xs text-muted-foreground">Crossed-out tables are taken at this time or in a closed section. Only combinable tables can be joined.</p>
       </fieldset>
 
       <Button type="submit" disabled={pending}>

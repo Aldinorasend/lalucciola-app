@@ -64,3 +64,12 @@ export async function writeBooking({
   }
   return null;
 }
+
+/** Closed sections on a restaurant-local date ("YYYY-MM-DD"), as area id → section name (D-033). */
+export async function closedAreas(date: string) {
+  const closures = await db.areaClosure.findMany({
+    where: { date: new Date(`${date}T00:00:00Z`) },
+    select: { areaId: true, area: { select: { name: true } } },
+  });
+  return new Map(closures.map((closure) => [closure.areaId, closure.area.name]));
+}
