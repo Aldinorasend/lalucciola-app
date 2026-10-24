@@ -57,7 +57,7 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 
 ## Built in Phase 1c
 - **Timeline page** has a **Grid** (default) and a **List** view, kept in the URL (`?view=list`, `?date=`).
-  - Grid: tables grouped by section down the side, the booking window plus one dining duration across, hour lines, a red "now" line today. Bookings are bars (Booked blue, Seated green, Completed grey, Late with an amber ring); a booking on several tables shows on each. Cancelled and no-show bookings are hidden because they free the table. Clicking a bar opens the same actions menu as the list.
+  - Grid: tables grouped by section down the side, the booking window plus one dining duration across, hour lines, a red "now" line today. Bookings are bars (Booked blue, Seated green, Completed grey, Late with an amber ring); a booking on several tables shows on each. Cancelled and no-show bookings are hidden because they free the table. Clicking a bar opens the same actions menu as the list. A colour key above the grid explains Booked, Seated, Completed, Late and the Now line.
   - The grid scrolls sideways inside its box; table names and section names stay pinned on the left.
 - **Calendar page** has **Week** (default; one card per day with each booking's time, guest, party and tables) and **Month** (day cells with booking and cover counts). **Day** opens the Timeline for that date; every day links there too. Cancelled and no-show bookings are left out. Weeks run Monday to Sunday.
 - **Not built yet:** clicking an empty grid cell to start a booking at that table and time.
