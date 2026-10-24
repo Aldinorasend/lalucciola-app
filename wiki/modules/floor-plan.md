@@ -88,6 +88,7 @@ The layout follows the reference screenshot:
 - A grid of table cards grouped by **section**. Each card shows the table, seats, a status badge, and the current or next guest with party size and time ("seated 45 min").
 - Statuses: **Free**, **Reserved soon** (booking starts within X min, configurable), **Seated**, **Closed** (section closed).
 - The same quick actions and section/status filters as the floor plan.
+- **Built (Phase 2a):** cards per active table by section; Free / Reserved soon / Seated from `tableState()` in `lib/bookings.ts` (Reserved soon = a booking starts within the "reserved soon" setting, or is late); seated time; next booking on free tables; status and section filters with counts; refreshes every 60 s. Free cards have **Seat walk-in**; other cards open the booking actions. **Closed** waits for section closures (Phase 2b); the date/time scrubber is not built.
 
 ## Editing (Owner only, Settings → Areas & tables)
 Owners can drag to position tables, and set the shape, size, rotation, seats, section and combinable flag. Owners can also open or close a section for a date or service period. Positions are stored on `Table`, closures in `AreaClosure` (see [data-model](../architecture/data-model.md)). Build the canvas from absolutely positioned elements (CSS transforms). Don't add a heavy canvas library unless it's needed.
