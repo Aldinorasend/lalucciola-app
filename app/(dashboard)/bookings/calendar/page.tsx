@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import { STATUS_BADGE } from "@/components/bookings/status";
+import { bookingStyle, STATUS_BADGE, WALK_IN_STYLE } from "@/components/bookings/status";
 import { RequirePermission } from "@/components/require-permission";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +54,7 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
       partySize: true,
       startAt: true,
       status: true,
+      source: true,
       tables: { select: { table: { select: { label: true } } } },
     },
   });
@@ -144,10 +145,10 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
       ) : (
         <div className="grid gap-2">
           <ul aria-label="Colour key" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            {(["BOOKED", "SEATED", "COMPLETED"] as const).map((status) => (
-              <li key={status} className="flex items-center gap-1.5">
-                <span aria-hidden className={`inline-block h-3 w-5 rounded-sm border ${STATUS_BADGE[status].className}`} />
-                {STATUS_BADGE[status].label}
+            {[STATUS_BADGE.BOOKED, STATUS_BADGE.SEATED, WALK_IN_STYLE, STATUS_BADGE.COMPLETED].map((style) => (
+              <li key={style.label} className="flex items-center gap-1.5">
+                <span aria-hidden className={`inline-block h-3 w-5 rounded-sm border ${style.className}`} />
+                {style.label}
               </li>
             ))}
           </ul>
@@ -170,12 +171,12 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
                     {list.map((booking) => (
                       <div
                         key={booking.id}
-                        title={STATUS_BADGE[booking.status].label}
-                        className={`grid gap-0.5 rounded-md px-2 py-1 text-xs ${STATUS_BADGE[booking.status].className}`}
+                        title={bookingStyle(booking.status, booking.source).label}
+                        className={`grid gap-0.5 rounded-md px-2 py-1 text-xs ${bookingStyle(booking.status, booking.source).className}`}
                       >
                         <span className="font-medium tabular-nums">
                           {formatLocalTime(booking.startAt)}
-                          <span className="sr-only"> {STATUS_BADGE[booking.status].label}</span>
+                          <span className="sr-only"> {bookingStyle(booking.status, booking.source).label}</span>
                         </span>
                         <span className="truncate">{booking.guestName}</span>
                         <span className="opacity-80">

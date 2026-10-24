@@ -13,11 +13,13 @@ const BAR_STYLE: Record<string, string> = {
   BOOKED: "bg-blue-600 text-white hover:bg-blue-700",
   SEATED: "bg-emerald-600 text-white hover:bg-emerald-700",
   COMPLETED: "bg-muted text-muted-foreground",
+  WALK_IN: "bg-violet-600 text-white hover:bg-violet-700",
 };
 
 const LEGEND = [
   { label: "Booked", swatch: `h-3 w-5 rounded-sm ${BAR_STYLE.BOOKED}` },
   { label: "Seated", swatch: `h-3 w-5 rounded-sm ${BAR_STYLE.SEATED}` },
+  { label: "Walk-in", swatch: `h-3 w-5 rounded-sm ${BAR_STYLE.WALK_IN}` },
   { label: "Completed", swatch: `h-3 w-5 rounded-sm border ${BAR_STYLE.COMPLETED}` },
   { label: "Late (guest not here yet)", swatch: "h-3 w-5 rounded-sm bg-blue-600 ring-2 ring-amber-500 ring-offset-1" },
   { label: "Now", swatch: "h-3 w-px bg-red-500" },
@@ -96,7 +98,7 @@ export function TimelineGrid({
                               title={label}
                               aria-label={label}
                               disabled={!isActive(booking.status)}
-                              className={`absolute inset-y-1 overflow-hidden rounded-md px-1.5 text-left text-xs leading-tight whitespace-nowrap ${BAR_STYLE[booking.status]} ${booking.late ? "ring-2 ring-amber-500 ring-offset-1" : ""}`}
+                              className={`absolute inset-y-1 overflow-hidden rounded-md px-1.5 text-left text-xs leading-tight whitespace-nowrap ${BAR_STYLE[booking.source === "WALK_IN" && isActive(booking.status) ? "WALK_IN" : booking.status]} ${booking.late ? "ring-2 ring-amber-500 ring-offset-1" : ""}`}
                               style={{ left: `${toRem(booking.startMinutes)}rem`, width: `${toRem(booking.endMinutes) - toRem(booking.startMinutes)}rem` }}
                             >
                               <span className="font-medium">{booking.guestName}</span> · {booking.partySize}

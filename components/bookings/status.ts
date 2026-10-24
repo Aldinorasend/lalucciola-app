@@ -13,3 +13,10 @@ export const STATUS_BADGE: Record<BookingStatus, { label: string; className: str
 export function isActive(status: BookingStatus) {
   return status === "BOOKED" || status === "SEATED";
 }
+
+export const WALK_IN_STYLE = { label: "Walk-in", className: "bg-violet-600 text-white" };
+
+/** Colour for a booking on the calendar and timeline: walk-ins stand apart from bookings until completed. */
+export function bookingStyle(status: BookingStatus, source: string) {
+  return source === "WALK_IN" && isActive(status) ? WALK_IN_STYLE : STATUS_BADGE[status];
+}
