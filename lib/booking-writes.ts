@@ -1,8 +1,17 @@
 import "server-only";
-import { ACTIVE_STATUSES } from "@/lib/bookings";
+import { ACTIVE_STATUSES, localParts, shiftDate, toInstant } from "@/lib/bookings";
 import { db } from "@/lib/db";
 
 class BookingConflict extends Error {}
+
+const dbDate = (date: string) => new Date(`${date}T00:00:00Z`);
+
+async function lockTables(tx: Pick<typeof db, "$queryRaw">, tableIds: string[]) {
+  // Sorted, so concurrent writers always lock in the same order and can't deadlock.
+  for (const tableId of [...tableIds].sort()) {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${tableId}))::text`;
+  }
+}
 
 type BookingData = {
   guestName: string;
@@ -39,9 +48,7 @@ export async function writeBooking({
   try {
     await db.$transaction(async (tx) => {
       // Serialize saves per table so two staff can't book the same table at once.
-      for (const tableId of [...tableIds].sort()) {
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${tableId}))::text`;
-      }
+      await lockTables(tx, tableIds);
       const clash = await tx.bookingTable.findFirst({
         where: {
           tableId: { in: tableIds },
@@ -51,6 +58,13 @@ export async function writeBooking({
         select: { table: { select: { label: true } }, booking: { select: { guestName: true } } },
       });
       if (clash) throw new BookingConflict(`Table ${clash.table.label} is already booked then (${clash.booking.guestName}).`);
+
+      // Checked under the same table locks as closeArea, so a closing section can't slip a booking in.
+      const closure = await tx.areaClosure.findFirst({
+        where: { date: dbDate(localParts(startAt).date), area: { tables: { some: { id: { in: tableIds } } } } },
+        select: { area: { select: { name: true } } },
+      });
+      if (closure) throw new BookingConflict(`${closure.area.name} is closed on that day.`);
 
       if (id) {
         await tx.booking.update({ where: { id }, data: { ...data, tables: { deleteMany: {}, create: links } } });
@@ -68,8 +82,42 @@ export async function writeBooking({
 /** Closed sections on a restaurant-local date ("YYYY-MM-DD"), as area id → section name (D-033). */
 export async function closedAreas(date: string) {
   const closures = await db.areaClosure.findMany({
-    where: { date: new Date(`${date}T00:00:00Z`) },
+    where: { date: dbDate(date) },
     select: { areaId: true, area: { select: { name: true } } },
   });
   return new Map(closures.map((closure) => [closure.areaId, closure.area.name]));
+}
+
+/**
+ * Closes a section for a restaurant-local day unless it has active bookings that day (D-049).
+ * Locks every table in the section first, so no booking can be saved into it meanwhile.
+ * Returns an error message, or null when closed.
+ */
+export async function closeArea({ areaId, date, reason, createdById }: { areaId: string; date: string; reason: string | null; createdById: string }) {
+  try {
+    await db.$transaction(async (tx) => {
+      const area = await tx.area.findUnique({ where: { id: areaId }, select: { name: true, tables: { select: { id: true } } } });
+      if (!area) throw new BookingConflict("This section no longer exists.");
+      await lockTables(tx, area.tables.map((table) => table.id));
+
+      const bookings = await tx.booking.count({
+        where: {
+          status: { in: [...ACTIVE_STATUSES] },
+          startAt: { gte: toInstant(date, 0), lt: toInstant(shiftDate(date, 1), 0) },
+          tables: { some: { table: { areaId } } },
+        },
+      });
+      if (bookings > 0) {
+        throw new BookingConflict(`${area.name} has ${bookings} active ${bookings === 1 ? "booking" : "bookings"} that day. Move or cancel them first.`);
+      }
+      if (await tx.areaClosure.findUnique({ where: { areaId_date: { areaId, date: dbDate(date) } } })) {
+        throw new BookingConflict(`${area.name} is already closed that day.`);
+      }
+      await tx.areaClosure.create({ data: { areaId, date: dbDate(date), reason, createdById } });
+    });
+  } catch (error) {
+    if (error instanceof BookingConflict) return error.message;
+    throw error;
+  }
+  return null;
 }

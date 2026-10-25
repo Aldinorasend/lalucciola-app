@@ -58,3 +58,24 @@ test("many saves for the same free table at the same moment: exactly one wins", 
   assert.equal(results.filter((result) => result === null).length, 1);
   assert.equal(await db.bookingTable.count({ where: { tableId: tableA, booking: { startAt: at(12 * 60) } } }), 1);
 });
+
+test("section closures: refused while booked, then block new bookings", async () => {
+  const { closeArea } = await import("../../lib/booking-writes");
+  const areaId = (await db.table.findUniqueOrThrow({ where: { id: tableA } })).areaId;
+  // tableA holds bookings on 2030-01-07, so closing that day is refused.
+  assert.match((await closeArea({ areaId, date: "2030-01-07", reason: null, createdById: userId })) ?? "", /active bookings that day/);
+  // A free day can be closed, once.
+  assert.equal(await closeArea({ areaId, date: "2030-01-08", reason: "Private event", createdById: userId }), null);
+  assert.match((await closeArea({ areaId, date: "2030-01-08", reason: null, createdById: userId })) ?? "", /already closed/);
+  // While closed, no booking lands on its tables that day.
+  const closedDay = (minutes: number) => toInstant("2030-01-08", minutes);
+  const refused = await writeBooking({
+    tableIds: [tableB],
+    startAt: closedDay(19 * 60),
+    endAt: closedDay(20 * 60 + 30),
+    createdById: userId,
+    data: { guestName: run, guestPhone: null, partySize: 2, source: "PHONE", notes: null, startAt: closedDay(19 * 60), endAt: closedDay(20 * 60 + 30) },
+  });
+  assert.match(refused ?? "", /is closed on that day/);
+  await db.areaClosure.deleteMany({ where: { areaId } });
+});
