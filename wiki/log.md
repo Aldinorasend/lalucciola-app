@@ -22,3 +22,4 @@ Append-only, newest at the bottom. One line per change: `YYYY-MM-DD — what cha
 - 2026-10-24 — Phase 2a built: tables display with live states, filters and auto-refresh; walk-ins seated from a free table; Phase 2 split into 2a/2b/2c; updated floor-plan, booking and roadmap.
 - 2026-10-24 — Audit fixes: walk-ins can be edited, timeline grid colours come from bookingStyle(), sign-in returns to the requested page, login timing no longer reveals existing emails, toasts stay light; added the database tests for booking writes and D-048.
 - 2026-10-24 — Phase 2b-1 built: section closures (model, Settings close/reopen, booking and walk-in rules, Closed state on the Tables page and timeline); added D-049.
+- 2026-10-24 — Phase 2b-2 built: floor plan screen (live colours, zoom, time strip, side panel, click actions); fixed "1 guests" wording.

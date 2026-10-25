@@ -83,6 +83,7 @@ The layout follows the reference screenshot:
   - notices such as "section 4 closed"
   - the booking list for that window, or an empty state ("No bookings on Saturday 24 October (yet).")
 - Clicking a table opens its bookings and quick actions: seat walk-in, seat booking, complete.
+- **Built (Phase 2b-2):** tables at their seeded x/y with shape, rotation and a size from seats; colours Free (green outline), Reserved soon (amber), Seated (green), Walk-in (violet), Closed section (grey dashed), with a colour key; zoom 60–160 %; **Live** plus a time strip of today's remaining slots (the room at a later moment; past moments aren't shown); Open/Closed badge from booking hours; side panel with seated, late and upcoming bookings for the next 2 h, an Active/Booked/Seated filter with counts and closed-section notices; free tables open the walk-in dialog (Live only), booked or seated tables open the booking actions; refreshes every minute while Live. **Not built:** drawn chairs (seat counts instead), a time-window picker other than 2 h, the overflow menu, and the floor-plan editor.
 
 ## Tables display (`/bookings/tables`)
 - A grid of table cards grouped by **section**. Each card shows the table, seats, a status badge, and the current or next guest with party size and time ("seated 45 min").

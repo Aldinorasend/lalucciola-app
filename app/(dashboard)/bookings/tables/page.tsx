@@ -164,7 +164,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                             <>
                               <div className="truncate font-medium">{card.current.guestName}</div>
                               <div className="text-xs text-muted-foreground">
-                                {card.current.partySize} guests · seated {Math.max(0, Math.round((now.getTime() - (card.current.seatedAt ?? card.current.startAt).getTime()) / 60_000))} min
+                                {card.current.partySize} {card.current.partySize === 1 ? "guest" : "guests"} · seated {Math.max(0, Math.round((now.getTime() - (card.current.seatedAt ?? card.current.startAt).getTime()) / 60_000))} min
                               </div>
                             </>
                           )}
@@ -172,7 +172,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                             <>
                               <div className="truncate font-medium">{card.next.guestName}</div>
                               <div className="text-xs text-muted-foreground">
-                                {card.next.partySize} guests · {formatLocalTime(card.next.startAt)}
+                                {card.next.partySize} {card.next.partySize === 1 ? "guest" : "guests"} · {formatLocalTime(card.next.startAt)}
                                 {row?.late && <span className="font-medium text-amber-600"> · Late</span>}
                               </div>
                             </>

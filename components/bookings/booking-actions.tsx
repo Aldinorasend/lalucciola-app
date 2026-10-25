@@ -78,7 +78,7 @@ export function BookingActions({ booking, slotMinutes, children }: { booking: Bo
         <DialogHeader>
           <DialogTitle>Cancel booking</DialogTitle>
           <DialogDescription>
-            {booking.guestName}, {booking.time}, {booking.partySize} guests. The table becomes free.
+            {booking.guestName}, {booking.time}, {booking.partySize} {booking.partySize === 1 ? "guest" : "guests"}. The table becomes free.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onStatus} className="grid gap-4">
