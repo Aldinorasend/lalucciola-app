@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toTime } from "@/lib/booking-settings";
-import { dayOfWeek, formatDay, localParts, shiftDate, toInstant } from "@/lib/bookings";
+import { count, dayOfWeek, formatDay, localParts, shiftDate, toInstant } from "@/lib/bookings";
 import { closedAreas } from "@/lib/booking-writes";
 import { db } from "@/lib/db";
 
@@ -41,18 +41,19 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
   const today = localParts(now).date;
   const date = typeof requested === "string" && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : today;
 
-  const dayRange = { gte: toInstant(date, 0), lt: toInstant(shiftDate(date, 1), 0) };
+  // Bookings that overlap the day, so a walk-in seated before midnight still shows after it.
+  const onDay = { startAt: { lt: toInstant(shiftDate(date, 1), 0) }, endAt: { gt: toInstant(date, 0) } };
   const [settings, hours, bookings, tables, closed] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
     db.openingHours.findUnique({ where: { dayOfWeek: dayOfWeek(date) } }),
     db.booking.findMany({
-      where: { startAt: dayRange },
+      where: onDay,
       orderBy: { startAt: "asc" },
       include: { tables: { select: { tableId: true, table: { select: { label: true } } } } },
     }),
     db.table.findMany({
       // Switched-off tables still show when they hold a booking that day, so no guest goes missing.
-      where: { OR: [{ active: true }, { bookings: { some: { booking: { startAt: dayRange } } } }] },
+      where: { OR: [{ active: true }, { bookings: { some: { booking: onDay } } }] },
       orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
       select: { id: true, label: true, active: true, areaId: true, area: { select: { name: true } } },
     }),
@@ -72,7 +73,8 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
     const end = localParts(booking.endAt);
     return {
       ...toBookingRow(booking, now, settings.lateGraceMinutes),
-      startMinutes: start.minutes,
+      // Started the day before: draw it from midnight.
+      startMinutes: start.date === date ? start.minutes : 0,
       // A booking that runs past midnight is drawn up to the end of the day.
       endMinutes: end.date === date ? end.minutes : 24 * 60,
     };
@@ -99,7 +101,7 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
           <div className="ml-2">
             <div className="font-medium">{formatDay(date)}</div>
             <div className="text-sm text-muted-foreground">
-              {active.length} active {active.length === 1 ? "booking" : "bookings"} · {people} {people === 1 ? "person" : "people"} · booking {toTime(hours.firstBookingAt)}–
+              {count(active.length, "active booking")} · {count(people, "person")} · booking {toTime(hours.firstBookingAt)}–
               {toTime(hours.lastBookingAt)}
             </div>
           </div>
