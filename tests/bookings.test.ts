@@ -114,3 +114,19 @@ test("walk-in form: name defaults, phone optional, tables required", async () =>
   assert.equal(parseWalkInForm(form({}, [])).success, false);
   assert.equal(parseWalkInForm(form({ partySize: "0" })).success, false);
 });
+
+test("waitlist form: name and size required, phone and quoted wait optional", async () => {
+  const { parseWaitlistForm } = await import("../lib/bookings");
+  const form = (fields: Record<string, string>) => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries(fields)) data.set(key, value);
+    return data;
+  };
+  const ok = parseWaitlistForm(form({ guestName: "Rina", partySize: "3", guestPhone: "", quotedWaitMin: "" }));
+  assert.ok(ok.success);
+  assert.equal(ok.data.quotedWaitMin, undefined);
+  assert.equal(parseWaitlistForm(form({ guestName: "Rina", partySize: "3", quotedWaitMin: "20" })).data?.quotedWaitMin, 20);
+  assert.equal(parseWaitlistForm(form({ guestName: " ", partySize: "3" })).success, false);
+  assert.equal(parseWaitlistForm(form({ guestName: "Rina", partySize: "0" })).success, false);
+  assert.equal(parseWaitlistForm(form({ guestName: "Rina", partySize: "2", quotedWaitMin: "-5" })).success, false);
+});

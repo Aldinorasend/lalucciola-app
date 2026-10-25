@@ -161,3 +161,18 @@ export const walkInSchema = z.object({
 export function parseWalkInForm(form: FormData) {
   return walkInSchema.safeParse({ ...Object.fromEntries(form), tableIds: form.getAll("tableIds") });
 }
+
+// Waitlist entries (wiki/modules/booking.md#walk-ins--waitlist): phone optional like walk-ins.
+export const waitlistSchema = z.object({
+  guestName: z.string().trim().min(1, "Enter the guest's name").max(80, "Name is too long"),
+  guestPhone: optionalText(30).refine((phone) => !phone || /^[+\d][\d\s-]{5,}$/.test(phone), "Enter a valid phone number"),
+  partySize: z.coerce.number().int("Party size must be a whole number").min(1, "Party size must be at least 1").max(60, "Party size is too large"),
+  quotedWaitMin: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.coerce.number().int().min(0, "Quoted wait can't be negative").max(240, "Quoted wait is too long").optional(),
+  ),
+});
+
+export function parseWaitlistForm(form: FormData) {
+  return waitlistSchema.safeParse(Object.fromEntries(form));
+}

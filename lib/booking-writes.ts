@@ -23,6 +23,8 @@ type BookingData = {
   endAt: Date;
   status?: "SEATED";
   seatedAt?: Date;
+  // Links the waitlist party this walk-in came from.
+  waitlistEntry?: { connect: { id: string } };
 };
 
 /**
@@ -118,6 +120,43 @@ export async function closeArea({ areaId, date, reason, createdById }: { areaId:
   } catch (error) {
     if (error instanceof BookingConflict) return error.message;
     throw error;
+  }
+  return null;
+}
+
+/**
+ * Seats a waiting party now at the chosen tables as a walk-in booking.
+ * The entry is claimed first (WAITING to SEATED in one statement) so two staff can't seat it twice;
+ * if the tables turn out to be taken, the claim is undone. Returns an error message, or null.
+ */
+export async function seatWaitlistEntry({ entryId, tableIds, diningMinutes, createdById }: { entryId: string; tableIds: string[]; diningMinutes: number; createdById: string }) {
+  const startAt = new Date(Math.floor(Date.now() / 60_000) * 60_000);
+  const claimed = await db.waitlistEntry.updateMany({ where: { id: entryId, status: "WAITING" }, data: { status: "SEATED", closedAt: startAt } });
+  if (claimed.count === 0) return "This party was already seated or left.";
+
+  const entry = await db.waitlistEntry.findUniqueOrThrow({ where: { id: entryId } });
+  const endAt = new Date(startAt.getTime() + diningMinutes * 60_000);
+  const conflict = await writeBooking({
+    tableIds,
+    startAt,
+    endAt,
+    createdById,
+    data: {
+      guestName: entry.guestName,
+      guestPhone: entry.guestPhone,
+      partySize: entry.partySize,
+      source: "WALK_IN",
+      notes: null,
+      status: "SEATED",
+      seatedAt: startAt,
+      startAt,
+      endAt,
+      waitlistEntry: { connect: { id: entryId } },
+    },
+  });
+  if (conflict) {
+    await db.waitlistEntry.update({ where: { id: entryId }, data: { status: "WAITING", closedAt: null } });
+    return conflict;
   }
   return null;
 }
