@@ -50,9 +50,9 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 
 ## Built in Phase 2c: waitlist
 - `/bookings/waitlist`: add a party (name, guests, optional phone and quoted wait); the queue shows longest wait first with "waiting N min", turning amber past the quoted time; refreshes every minute.
-- **Seat** opens the shared table picker (free tables now); seating creates a SEATED walk-in booking under the same table locks as every booking and links it to the entry. The party is claimed first, so two staff can't seat it twice; a taken table puts it back in the queue.
+- **Seat** opens the shared table picker (free tables now); seating creates a SEATED walk-in booking under the same table locks as every booking and links it to the entry. The party is claimed first, so two staff can't seat it twice; a taken table or any other failure puts it back in the queue.
 - **Left** closes the entry. "Earlier today" lists seated and left parties with their tables.
-- The sidebar shows the number of parties waiting next to Waitlist.
+- The queue and the sidebar count show today only: a party left waiting from an earlier day is stale and drops off.
 
 ## Built in Phase 1b (D-047)
 - **Day list** at `/bookings/timeline?date=YYYY-MM-DD`: bookings in time order with status badges, Late badge, covers count, and previous/next/today navigation. The table × time grid and the calendar come in 1c.
@@ -63,7 +63,7 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 - **Server checks:** start time on a slot within that weekday's hours; party fits the chosen tables; only combinable tables can be joined; no overlap with another BOOKED/SEATED booking on the same table.
 
 ## Built in Phase 1c
-- **Timeline page** has a **Grid** (default) and a **List** view, kept in the URL (`?view=list`, `?date=`).
+- **Timeline page** has a **Grid** (default) and a **List** view, kept in the URL (`?view=list`, `?date=`). It shows every booking that overlaps the day, so a walk-in seated before midnight is drawn from 00:00 the next day.
   - Grid: tables grouped by section down the side, the booking window plus one dining duration across, hour lines, a red "now" line today. Bookings are bars (Booked blue, Seated green, Completed grey, Late with an amber ring); a booking on several tables shows on each. Cancelled and no-show bookings are hidden because they free the table. Clicking a bar opens the same actions menu as the list. A colour key above the grid explains Booked, Seated, Completed, Late and the Now line.
   - The grid scrolls sideways inside its box; table names and section names stay pinned on the left.
 - **Calendar month cells** show coloured counts: blue "N bookings", violet "N walk-ins" and green "N people" (the app says people, not covers).
