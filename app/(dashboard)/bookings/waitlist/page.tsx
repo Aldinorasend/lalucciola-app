@@ -33,7 +33,8 @@ async function Waitlist() {
   const now = new Date();
   const { date: today, minutes } = localParts(now);
   const [waiting, doneToday] = await Promise.all([
-    db.waitlistEntry.findMany({ where: { status: "WAITING" }, orderBy: { addedAt: "asc" } }),
+    // Today only: parties left waiting from an earlier day are stale, not still here.
+    db.waitlistEntry.findMany({ where: { status: "WAITING", addedAt: { gte: toInstant(today, 0) } }, orderBy: { addedAt: "asc" } }),
     db.waitlistEntry.findMany({
       where: { status: { in: ["SEATED", "LEFT"] }, closedAt: { gte: toInstant(today, 0) } },
       orderBy: { closedAt: "desc" },
