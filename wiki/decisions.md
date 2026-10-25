@@ -154,3 +154,6 @@ Saving a booking takes a Postgres advisory lock per chosen table (sorted, to avo
 
 **D-048 — Booking writes are tested against a real database** · 2026-10-24 · Accepted
 `lib/booking-writes.ts` (lock, overlap check, write) has tests in `tests/db/` that run against Postgres: an overlapping booking is refused, an edit doesn't clash with itself, and of 10 simultaneous saves for one table exactly one wins. CI starts a Postgres service for them. Removing the lock makes the last test fail.
+
+**D-049 — Section closures are whole days and refuse active bookings** · 2026-10-24 · Accepted (implements D-033)
+The owner closes a section for a restaurant-local date in Settings. It can't be closed while it has BOOKED or SEATED bookings that day (move or cancel them first), so no guest is stranded. While closed, its tables can't be booked or take walk-ins, the booking picker crosses them out, the Tables page shows them as Closed, and the timeline marks the section. Closing per service period (lunch/dinner) isn't modelled.

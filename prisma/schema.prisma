@@ -26,6 +26,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   bookings     Booking[]
+  closures     AreaClosure[]
 }
 
 // Booking settings: wiki/modules/settings.md, wiki/modules/floor-plan.md
@@ -42,6 +43,22 @@ model Area {
   name      String  @unique
   sortOrder Int     @default(0)
   tables    Table[]
+  closures  AreaClosure[]
+}
+
+// A section closed for a whole restaurant-local day (D-033). Its tables can't be booked that day.
+model AreaClosure {
+  id          String   @id @default(cuid())
+  areaId      String
+  area        Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  reason      String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([areaId, date])
+  @@index([date])
 }
 
 model Table {

@@ -8,7 +8,7 @@ updated: 2026-10-24
 
 **Owner/Admin only** (see [roles-permissions](../architecture/roles-permissions.md)). It is organized in tabs.
 
-**Built so far (Phase 1a):** the *Booking hours* tab (slot length, dining duration, reserved-soon and late thresholds, first/last booking time per weekday) and the *Sections & tables* tab (rename sections; per table: min/max seats, section, combinable, active). Validation lives in `lib/booking-settings.ts` and runs on the server. **Not built yet:** General, Inventory and Users & roles tabs, adding tables, section closures, and the floor-plan editor.
+**Built so far (Phase 1a):** the *Booking hours* tab (slot length, dining duration, reserved-soon and late thresholds, first/last booking time per weekday) and the *Sections & tables* tab (rename sections; per table: min/max seats, section, combinable, active). Validation lives in `lib/booking-settings.ts` and runs on the server. **Section closures (Phase 2b-1):** under each section name, close it for a date (today or later, optional reason) or reopen it. Closing is refused while that section has active bookings that day. **Not built yet:** General, Inventory and Users & roles tabs, adding tables, and the floor-plan editor.
 
 | Tab | Contents |
 |---|---|
