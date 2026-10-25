@@ -66,7 +66,7 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
   const nextSlot = Math.ceil((localParts(now).minutes + 1) / settings.slotMinutes) * settings.slotMinutes;
   const defaultTime = toTime(date === today ? Math.min(Math.max(nextSlot, hours.firstBookingAt), hours.lastBookingAt) : hours.firstBookingAt);
   const active = bookings.filter((booking) => booking.status === "BOOKED" || booking.status === "SEATED");
-  const covers = active.reduce((sum, booking) => sum + booking.partySize, 0);
+  const people = active.reduce((sum, booking) => sum + booking.partySize, 0);
   const rows = bookings.map((booking) => {
     const start = localParts(booking.startAt);
     const end = localParts(booking.endAt);
@@ -99,7 +99,7 @@ async function DayBookings({ searchParams }: { searchParams: PageProps<"/booking
           <div className="ml-2">
             <div className="font-medium">{formatDay(date)}</div>
             <div className="text-sm text-muted-foreground">
-              {active.length} active {active.length === 1 ? "booking" : "bookings"} · {covers} covers · booking {toTime(hours.firstBookingAt)}–
+              {active.length} active {active.length === 1 ? "booking" : "bookings"} · {people} {people === 1 ? "person" : "people"} · booking {toTime(hours.firstBookingAt)}–
               {toTime(hours.lastBookingAt)}
             </div>
           </div>

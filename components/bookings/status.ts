@@ -57,3 +57,14 @@ export function toBookingRow(
     tableLabels: booking.tables.map((link) => link.table.label),
   };
 }
+
+/**
+ * Live table states, shared by the Tables page and the floor plan so both always match.
+ * fill: a table shape on the floor plan; badge and card: the Tables page.
+ */
+export const TABLE_STATE_STYLE = {
+  FREE: { label: "Free", fill: "border-2 border-emerald-600 bg-background text-foreground", badge: "border-emerald-600 bg-transparent text-emerald-700", card: "" },
+  SOON: { label: "Reserved soon", fill: "bg-amber-500 text-white", badge: "bg-amber-500 text-white", card: "border-amber-500/60" },
+  SEATED: { label: "Seated", fill: "bg-emerald-600 text-white", badge: "bg-emerald-600 text-white", card: "border-emerald-600/60 bg-emerald-600/5" },
+  CLOSED: { label: "Closed", fill: "border-2 border-dashed border-muted-foreground/40 bg-muted text-muted-foreground", badge: "bg-muted text-muted-foreground", card: "bg-muted/50 opacity-70" },
+};

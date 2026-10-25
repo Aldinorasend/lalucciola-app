@@ -18,7 +18,7 @@ export default function CalendarPage({ searchParams }: PageProps<"/bookings/cale
     <div className="grid gap-6">
       <div className="grid gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground">Bookings and covers by week or month. Cancelled and no-show bookings are left out.</p>
+        <p className="text-muted-foreground">Bookings and people by week or month. Cancelled and no-show bookings are left out.</p>
       </div>
       <RequirePermission permission="bookings.manage">
         <Suspense fallback={<Skeleton className="h-96 w-full" />}>
@@ -118,7 +118,9 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
               <div key={week[0]} className="grid grid-cols-7 border-b last:border-0">
                 {week.map((day) => {
                   const list = byDay.get(day) ?? [];
-                  const covers = list.reduce((sum, booking) => sum + booking.partySize, 0);
+                  const people = list.reduce((sum, booking) => sum + booking.partySize, 0);
+                  const walkIns = list.filter((booking) => booking.source === "WALK_IN").length;
+                  const booked = list.length - walkIns;
                   const inMonth = day.slice(0, 7) === date.slice(0, 7);
                   return (
                     <Link
@@ -130,9 +132,20 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
                         {Number(day.slice(8))}
                       </span>
                       {list.length > 0 && (
-                        <span className="text-xs">
-                          <span className="font-medium">{list.length}</span> {list.length === 1 ? "booking" : "bookings"}
-                          <span className="block text-muted-foreground">{covers} covers</span>
+                        <span className="flex flex-wrap gap-1 text-[11px] leading-tight font-medium">
+                          {booked > 0 && (
+                            <span className={`rounded px-1.5 py-0.5 ${STATUS_BADGE.BOOKED.className}`}>
+                              {booked} {booked === 1 ? "booking" : "bookings"}
+                            </span>
+                          )}
+                          {walkIns > 0 && (
+                            <span className={`rounded px-1.5 py-0.5 ${WALK_IN_STYLE.className}`}>
+                              {walkIns} {walkIns === 1 ? "walk-in" : "walk-ins"}
+                            </span>
+                          )}
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-800">
+                            {people} {people === 1 ? "person" : "people"}
+                          </span>
                         </span>
                       )}
                     </Link>
@@ -155,7 +168,7 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
           <div className="grid gap-3 xl:grid-cols-7">
             {days.map((day) => {
               const list = byDay.get(day) ?? [];
-              const covers = list.reduce((sum, booking) => sum + booking.partySize, 0);
+              const people = list.reduce((sum, booking) => sum + booking.partySize, 0);
               return (
                 <Card key={day} className="gap-2 py-3">
                   <CardContent className="grid gap-2 px-3">
@@ -165,7 +178,7 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
                         {day === today && " · Today"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {list.length ? `${list.length} · ${covers} covers` : "No bookings"}
+                        {list.length ? `${list.length} ${list.length === 1 ? "booking" : "bookings"} · ${people} ${people === 1 ? "person" : "people"}` : "No bookings"}
                       </span>
                     </Link>
                     {list.map((booking) => (

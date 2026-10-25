@@ -10,7 +10,6 @@ import {
   checkStartTime,
   checkTables,
   dayOfWeek,
-  localParts,
   parseBookingForm,
   parseWalkInForm,
   toInstant,
@@ -48,9 +47,6 @@ export async function saveBooking(_previous: ActionResult, form: FormData): Prom
   const isWalkIn = existing?.source === "WALK_IN";
   const problem = (isWalkIn ? null : checkStartTime(minutes, hours, settings.slotMinutes)) ?? checkTables(tables, guest.partySize);
   if (problem) return { error: problem };
-  const closed = await closedAreas(date);
-  const shut = tables.find((table) => closed.has(table.areaId));
-  if (shut) return { error: `${closed.get(shut.areaId)} is closed on that day.` };
 
   const startAt = toInstant(date, minutes);
   const endAt = new Date(startAt.getTime() + settings.diningMinutes * 60_000);
@@ -163,9 +159,6 @@ export async function seatWalkIn(_previous: ActionResult, form: FormData): Promi
   if (tables.length !== tableIds.length) return { error: "A chosen table no longer exists. Reload and try again." };
   const problem = checkTables(tables, guest.partySize);
   if (problem) return { error: problem };
-  const closed = await closedAreas(localParts(new Date()).date);
-  const shut = tables.find((table) => closed.has(table.areaId));
-  if (shut) return { error: `${closed.get(shut.areaId)} is closed today.` };
 
   // Walk-ins are already here, so booking hours and slots don't apply.
   const startAt = new Date(Math.floor(Date.now() / 60_000) * 60_000);

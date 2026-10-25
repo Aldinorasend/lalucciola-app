@@ -3,7 +3,8 @@
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/components/use-action-toast";
 import { areaNameSchema, parseBookingHoursForm, tableSchema } from "@/lib/booking-settings";
-import { localParts, shiftDate, toInstant } from "@/lib/bookings";
+import { closeArea } from "@/lib/booking-writes";
+import { localParts } from "@/lib/bookings";
 import { getCurrentUser, hasPermission } from "@/lib/dal";
 import { db } from "@/lib/db";
 
@@ -58,22 +59,8 @@ export async function closeSection(_previous: ActionResult, form: FormData): Pro
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Pick a date." };
   if (date < localParts(new Date()).date) return { error: "Pick today or a later date." };
 
-  const area = await db.area.findUnique({ where: { id: areaId }, select: { name: true } });
-  if (!area) return { error: "This section no longer exists." };
-  const bookings = await db.booking.count({
-    where: {
-      status: { in: ["BOOKED", "SEATED"] },
-      startAt: { gte: toInstant(date, 0), lt: toInstant(shiftDate(date, 1), 0) },
-      tables: { some: { table: { areaId } } },
-    },
-  });
-  if (bookings > 0) {
-    return { error: `${area.name} has ${bookings} active ${bookings === 1 ? "booking" : "bookings"} that day. Move or cancel them first.` };
-  }
-
-  const existing = await db.areaClosure.findUnique({ where: { areaId_date: { areaId, date: new Date(`${date}T00:00:00Z`) } } });
-  if (existing) return { error: `${area.name} is already closed that day.` };
-  await db.areaClosure.create({ data: { areaId, date: new Date(`${date}T00:00:00Z`), reason, createdById: user.id } });
+  const error = await closeArea({ areaId, date, reason, createdById: user.id });
+  if (error) return { error };
   refresh();
   return { ok: true };
 }

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { BookingActions } from "@/components/bookings/booking-actions";
-import { toBookingRow } from "@/components/bookings/status";
+import { TABLE_STATE_STYLE, toBookingRow } from "@/components/bookings/status";
 import { WalkInButton } from "@/components/bookings/walk-in-button";
 import { RequirePermission } from "@/components/require-permission";
 import { Badge } from "@/components/ui/badge";
@@ -18,12 +18,7 @@ export const metadata: Metadata = { title: "Tables" };
 
 type CardState = TableState | "CLOSED";
 
-const STATES: Record<CardState, { label: string; badge: string; card: string }> = {
-  FREE: { label: "Free", badge: "border-emerald-600 bg-transparent text-emerald-700 dark:text-emerald-400", card: "" },
-  SOON: { label: "Reserved soon", badge: "bg-amber-500 text-white", card: "border-amber-500/60" },
-  SEATED: { label: "Seated", badge: "bg-emerald-600 text-white", card: "border-emerald-600/60 bg-emerald-600/5" },
-  CLOSED: { label: "Closed", badge: "bg-muted text-muted-foreground", card: "bg-muted/50 opacity-70" },
-};
+const STATES: Record<CardState, { label: string; badge: string; card: string }> = TABLE_STATE_STYLE;
 const FILTERS = [
   { value: "", label: "All" },
   { value: "FREE", label: "Free" },
@@ -54,21 +49,25 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
   const now = new Date();
   const today = localParts(now).date;
 
+  // Active bookings still running now or starting later today.
+  const upcoming = { status: { in: ["BOOKED" as const, "SEATED" as const] }, endAt: { gt: now }, startAt: { lt: toInstant(shiftDate(today, 1), 0) } };
   const [settings, closed, tables] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
     closedAreas(today),
     db.table.findMany({
-      where: { active: true },
+      // Switched-off tables still show while they hold a booking, so no guest goes missing.
+      where: { OR: [{ active: true }, { bookings: { some: { booking: upcoming } } }] },
       orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
       select: {
         id: true,
         label: true,
+        active: true,
         maxSeats: true,
         areaId: true,
         area: { select: { name: true } },
         // Active bookings still running now or starting later today.
         bookings: {
-          where: { booking: { status: { in: ["BOOKED", "SEATED"] }, endAt: { gt: now }, startAt: { lt: toInstant(shiftDate(today, 1), 0) } } },
+          where: { booking: upcoming },
           select: {
             booking: {
               select: {
@@ -153,7 +152,10 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                       <CardContent className="grid gap-2 px-3">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="text-lg font-semibold leading-none">{card.label}</div>
+                            <div className="text-lg font-semibold leading-none">
+                              {card.label}
+                              {!card.active && <span className="ml-1 text-xs font-normal text-muted-foreground">(off)</span>}
+                            </div>
                             <div className="text-xs text-muted-foreground">{card.maxSeats} seats</div>
                           </div>
                           <Badge className={state.badge}>{state.label}</Badge>
@@ -185,7 +187,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                           )}
                         </div>
 
-                        {card.state === "CLOSED" ? null : card.state === "FREE" ? (
+                        {card.state === "CLOSED" || (card.state === "FREE" && !card.active) ? null : card.state === "FREE" ? (
                           <WalkInButton tableId={card.id} tableLabel={card.label} maxSeats={card.maxSeats} />
                         ) : (
                           row && (

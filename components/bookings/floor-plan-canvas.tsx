@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { BookingActions } from "@/components/bookings/booking-actions";
 import type { BookingRowData } from "@/components/bookings/booking-row";
-import { bookingStyle } from "@/components/bookings/status";
+import { bookingStyle, TABLE_STATE_STYLE, WALK_IN_STYLE } from "@/components/bookings/status";
 import { WalkInButton } from "@/components/bookings/walk-in-button";
 import { Button } from "@/components/ui/button";
 
@@ -17,16 +17,15 @@ export type FloorTable = {
   posX: number;
   posY: number;
   maxSeats: number;
+  active: boolean;
   state: FloorState;
   booking: BookingRowData | null;
 };
 
-// Same colours as the Tables page and the timeline (wiki/architecture/ui-components.md).
+// Shared with the Tables page; seated walk-ins take the walk-in colour like the timeline.
 function tableColour(table: FloorTable) {
-  if (table.state === "CLOSED") return "border-2 border-dashed border-muted-foreground/40 bg-muted text-muted-foreground";
-  if (table.state === "FREE") return "border-2 border-emerald-600 bg-background text-foreground";
-  if (table.state === "SOON") return `bg-amber-500 text-white ${table.booking?.late ? "ring-2 ring-red-500 ring-offset-1" : ""}`;
-  return table.booking ? bookingStyle(table.booking.status, table.booking.source).className : "bg-emerald-600 text-white";
+  if (table.state === "SEATED" && table.booking) return bookingStyle(table.booking.status, table.booking.source).className;
+  return `${TABLE_STATE_STYLE[table.state].fill} ${table.state === "SOON" && table.booking?.late ? "ring-2 ring-red-500 ring-offset-1" : ""}`;
 }
 
 // Size from shape and seats, in canvas pixels (the reference plan is about 1180 × 650).
@@ -40,11 +39,9 @@ function tableSize(table: FloorTable) {
 }
 
 const LEGEND = [
-  { label: "Free", swatch: "border-2 border-emerald-600 bg-background" },
-  { label: "Reserved soon", swatch: "bg-amber-500" },
-  { label: "Seated", swatch: "bg-emerald-600" },
-  { label: "Walk-in", swatch: "bg-violet-600" },
-  { label: "Closed section", swatch: "border-2 border-dashed border-muted-foreground/40 bg-muted" },
+  ...(["FREE", "SOON", "SEATED"] as const).map((state) => ({ label: TABLE_STATE_STYLE[state].label, swatch: TABLE_STATE_STYLE[state].fill })),
+  { label: WALK_IN_STYLE.label, swatch: WALK_IN_STYLE.className },
+  { label: "Closed section", swatch: TABLE_STATE_STYLE.CLOSED.fill },
 ];
 
 /** The room with every table at its real position, coloured by its state at the chosen moment. */
@@ -88,7 +85,7 @@ export function FloorPlanCanvas({ tables, slotMinutes, live }: { tables: FloorTa
                   type="button"
                   aria-label={title}
                   title={title}
-                  disabled={table.state === "CLOSED" || (table.state === "FREE" && !live)}
+                  disabled={table.state === "CLOSED" || (table.state === "FREE" && (!live || !table.active))}
                   className={`absolute grid place-items-center text-xs leading-tight font-semibold shadow-sm transition enabled:hover:brightness-95 enabled:cursor-pointer ${table.shape === "ROUND" ? "rounded-full" : "rounded-md"} ${tableColour(table)}`}
                   style={{ left: table.posX, top: table.posY, width: w, height: h, transform: `translate(-50%, -50%) rotate(${table.rotation}deg)` }}
                 >
@@ -98,7 +95,7 @@ export function FloorPlanCanvas({ tables, slotMinutes, live }: { tables: FloorTa
                   </span>
                 </button>
               );
-              if (table.state === "FREE" && live) {
+              if (table.state === "FREE" && live && table.active) {
                 return (
                   <WalkInButton key={table.id} tableId={table.id} tableLabel={table.label} maxSeats={table.maxSeats}>
                     {shape}
