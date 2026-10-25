@@ -27,6 +27,7 @@ model User {
   updatedAt    DateTime @updatedAt
   bookings     Booking[]
   closures     AreaClosure[]
+  waitlist     WaitlistEntry[]
 }
 
 // Booking settings: wiki/modules/settings.md, wiki/modules/floor-plan.md
@@ -130,6 +131,7 @@ model Booking {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   tables       BookingTable[]
+  waitlistEntry WaitlistEntry?
 
   @@index([startAt])
 }
@@ -143,4 +145,29 @@ model BookingTable {
 
   @@id([bookingId, tableId])
   @@index([tableId])
+}
+
+// Walk-in parties waiting for a table (wiki/modules/booking.md#walk-ins--waitlist).
+enum WaitlistStatus {
+  WAITING
+  SEATED
+  LEFT
+}
+
+model WaitlistEntry {
+  id            String         @id @default(cuid())
+  guestName     String
+  guestPhone    String?
+  partySize     Int
+  quotedWaitMin Int?
+  status        WaitlistStatus @default(WAITING)
+  addedAt       DateTime       @default(now()) @db.Timestamptz(3)
+  closedAt      DateTime?      @db.Timestamptz(3)
+  // The walk-in booking created when the party is seated.
+  bookingId     String?        @unique
+  booking       Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdById   String
+  createdBy     User           @relation(fields: [createdById], references: [id])
+
+  @@index([status, addedAt])
 }
