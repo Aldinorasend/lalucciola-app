@@ -176,3 +176,10 @@ export const waitlistSchema = z.object({
 export function parseWaitlistForm(form: FormData) {
   return waitlistSchema.safeParse(Object.fromEntries(form));
 }
+
+const IRREGULAR: Record<string, string> = { person: "people" };
+
+/** "1 guest", "3 guests", "1 person", "8 people". */
+export function count(n: number, noun: string) {
+  return `${n} ${n === 1 ? noun : (IRREGULAR[noun] ?? `${noun}s`)}`;
+}

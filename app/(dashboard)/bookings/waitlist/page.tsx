@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toTime } from "@/lib/booking-settings";
-import { formatLocalTime, localParts, toInstant } from "@/lib/bookings";
+import { count, formatLocalTime, localParts, toInstant } from "@/lib/bookings";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Waitlist" };
@@ -96,7 +96,7 @@ async function Waitlist() {
                 <li key={entry.id} className="flex flex-wrap items-center gap-2">
                   <Badge variant={entry.status === "SEATED" ? "default" : "outline"}>{entry.status === "SEATED" ? "Seated" : "Left"}</Badge>
                   <span>
-                    {entry.guestName} · {entry.partySize} {entry.partySize === 1 ? "guest" : "guests"}
+                    {entry.guestName} · {count(entry.partySize, "guest")}
                   </span>
                   <span className="text-muted-foreground">
                     {entry.closedAt && formatLocalTime(entry.closedAt)}

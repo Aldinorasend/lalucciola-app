@@ -130,3 +130,13 @@ test("waitlist form: name and size required, phone and quoted wait optional", as
   assert.equal(parseWaitlistForm(form({ guestName: "Rina", partySize: "0" })).success, false);
   assert.equal(parseWaitlistForm(form({ guestName: "Rina", partySize: "2", quotedWaitMin: "-5" })).success, false);
 });
+
+test("count() picks singular or plural", async () => {
+  const { count } = await import("../lib/bookings");
+  assert.equal(count(1, "guest"), "1 guest");
+  assert.equal(count(3, "guest"), "3 guests");
+  assert.equal(count(0, "booking"), "0 bookings");
+  assert.equal(count(1, "person"), "1 person");
+  assert.equal(count(8, "person"), "8 people");
+  assert.equal(count(2, "walk-in"), "2 walk-ins");
+});

@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useActionToast } from "@/components/use-action-toast";
 import type { BookingRowData } from "@/components/bookings/booking-row";
-import type { BookingStatus } from "@/lib/bookings";
+import { type BookingStatus, count } from "@/lib/bookings";
 
 const ACTIONS: { to: BookingStatus; label: string; from: BookingStatus[] }[] = [
   { to: "SEATED", label: "Seat", from: ["BOOKED"] },
@@ -78,7 +78,7 @@ export function BookingActions({ booking, slotMinutes, children }: { booking: Bo
         <DialogHeader>
           <DialogTitle>Cancel booking</DialogTitle>
           <DialogDescription>
-            {booking.guestName}, {booking.time}, {booking.partySize} {booking.partySize === 1 ? "guest" : "guests"}. The table becomes free.
+            {booking.guestName}, {booking.time}, {count(booking.partySize, "guest")}. The table becomes free.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onStatus} className="grid gap-4">

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useActionToast } from "@/components/use-action-toast";
 import { isActive, STATUS_BADGE } from "@/components/bookings/status";
-import type { BookingStatus } from "@/lib/bookings";
+import { type BookingStatus, count } from "@/lib/bookings";
 
 export type BookingRowData = BookingFormValues & {
   id: string;
@@ -37,7 +37,7 @@ export function BookingRow({ booking, slotMinutes }: { booking: BookingRowData; 
           {booking.late && <Badge className="bg-amber-500 text-white">Late</Badge>}
         </div>
         <div className="text-sm text-muted-foreground">
-          {booking.partySize} {booking.partySize === 1 ? "guest" : "guests"} · Table {booking.tableLabels.join(" + ")}
+          {count(booking.partySize, "guest")} · Table {booking.tableLabels.join(" + ")}
           {booking.guestPhone && ` · ${booking.guestPhone}`}
         </div>
         {booking.notes && <div className="text-sm">{booking.notes}</div>}

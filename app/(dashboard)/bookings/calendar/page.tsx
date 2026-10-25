@@ -7,7 +7,7 @@ import { RequirePermission } from "@/components/require-permission";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDay, formatLocalTime, localParts, monthWeeks, shiftDate, toInstant, weekDates } from "@/lib/bookings";
+import { count, formatDay, formatLocalTime, localParts, monthWeeks, shiftDate, toInstant, weekDates } from "@/lib/bookings";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Calendar" };
@@ -135,16 +135,16 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
                         <span className="flex flex-wrap gap-1 text-[11px] leading-tight font-medium">
                           {booked > 0 && (
                             <span className={`rounded px-1.5 py-0.5 ${STATUS_BADGE.BOOKED.className}`}>
-                              {booked} {booked === 1 ? "booking" : "bookings"}
+                              {count(booked, "booking")}
                             </span>
                           )}
                           {walkIns > 0 && (
                             <span className={`rounded px-1.5 py-0.5 ${WALK_IN_STYLE.className}`}>
-                              {walkIns} {walkIns === 1 ? "walk-in" : "walk-ins"}
+                              {count(walkIns, "walk-in")}
                             </span>
                           )}
                           <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-800">
-                            {people} {people === 1 ? "person" : "people"}
+                            {count(people, "person")}
                           </span>
                         </span>
                       )}
@@ -178,7 +178,7 @@ async function CalendarView({ searchParams }: { searchParams: PageProps<"/bookin
                         {day === today && " · Today"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {list.length ? `${list.length} ${list.length === 1 ? "booking" : "bookings"} · ${people} ${people === 1 ? "person" : "people"}` : "No bookings"}
+                        {list.length ? `${count(list.length, "booking")} · ${count(people, "person")}` : "No bookings"}
                       </span>
                     </Link>
                     {list.map((booking) => (
