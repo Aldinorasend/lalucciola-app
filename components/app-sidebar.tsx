@@ -15,6 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { getCurrentUser } from "@/lib/dal";
+import { db } from "@/lib/db";
 
 // The shell renders instantly; the role-filtered nav and user menu stream in.
 export function AppSidebar() {
@@ -53,8 +54,8 @@ export function AppSidebar() {
 }
 
 async function RoleNav() {
-  const user = await getCurrentUser();
-  return <NavMain role={user.role} />;
+  const [user, waiting] = await Promise.all([getCurrentUser(), db.waitlistEntry.count({ where: { status: "WAITING" } })]);
+  return <NavMain role={user.role} badges={{ "/bookings/waitlist": waiting }} />;
 }
 
 async function UserMenu() {
