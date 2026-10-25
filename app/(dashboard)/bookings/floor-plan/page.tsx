@@ -51,16 +51,19 @@ async function FloorPlan({ searchParams }: { searchParams: PageProps<"/bookings/
   const moment = live ? now : toInstant(today, requested);
   const show = requestedShow === "BOOKED" || requestedShow === "SEATED" ? requestedShow : "";
 
+  const activeFromMoment = { status: { in: ["BOOKED" as const, "SEATED" as const] }, endAt: { gt: moment }, startAt: { lt: toInstant(shiftDate(today, 1), 0) } };
   const [settings, hours, closed, tables] = await Promise.all([
     db.bookingSettings.findUnique({ where: { id: 1 } }),
     db.openingHours.findUnique({ where: { dayOfWeek: dayOfWeek(today) } }),
     closedAreas(today),
     db.table.findMany({
-      where: { active: true },
+      // Switched-off tables still show while they hold a booking, so no guest goes missing.
+      where: { OR: [{ active: true }, { bookings: { some: { booking: activeFromMoment } } }] },
       orderBy: [{ area: { sortOrder: "asc" } }, { label: "asc" }],
       select: {
         id: true,
         label: true,
+        active: true,
         shape: true,
         rotation: true,
         posX: true,
@@ -69,7 +72,7 @@ async function FloorPlan({ searchParams }: { searchParams: PageProps<"/bookings/
         areaId: true,
         area: { select: { name: true } },
         bookings: {
-          where: { booking: { status: { in: ["BOOKED", "SEATED"] }, endAt: { gt: moment }, startAt: { lt: toInstant(shiftDate(today, 1), 0) } } },
+          where: { booking: activeFromMoment },
           select: {
             booking: {
               select: {
@@ -97,7 +100,8 @@ async function FloorPlan({ searchParams }: { searchParams: PageProps<"/bookings/
     const shown = state === "SEATED" ? current : state === "SOON" ? next : undefined;
     return {
       id: table.id,
-      label: table.label,
+      label: table.active ? table.label : `${table.label} (off)`,
+      active: table.active,
       shape: table.shape,
       rotation: table.rotation,
       posX: table.posX,
