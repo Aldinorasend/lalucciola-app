@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatLocalTime, localParts, shiftDate, type TableState, tableState, toInstant } from "@/lib/bookings";
+import { count, formatLocalTime, localParts, shiftDate, type TableState, tableState, toInstant } from "@/lib/bookings";
 import { closedAreas } from "@/lib/booking-writes";
 import { db } from "@/lib/db";
 
@@ -166,7 +166,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                             <>
                               <div className="truncate font-medium">{card.current.guestName}</div>
                               <div className="text-xs text-muted-foreground">
-                                {card.current.partySize} {card.current.partySize === 1 ? "guest" : "guests"} · seated {Math.max(0, Math.round((now.getTime() - (card.current.seatedAt ?? card.current.startAt).getTime()) / 60_000))} min
+                                {count(card.current.partySize, "guest")} · seated {Math.max(0, Math.round((now.getTime() - (card.current.seatedAt ?? card.current.startAt).getTime()) / 60_000))} min
                               </div>
                             </>
                           )}
@@ -174,7 +174,7 @@ async function TablesNow({ searchParams }: { searchParams: PageProps<"/bookings/
                             <>
                               <div className="truncate font-medium">{card.next.guestName}</div>
                               <div className="text-xs text-muted-foreground">
-                                {card.next.partySize} {card.next.partySize === 1 ? "guest" : "guests"} · {formatLocalTime(card.next.startAt)}
+                                {count(card.next.partySize, "guest")} · {formatLocalTime(card.next.startAt)}
                                 {row?.late && <span className="font-medium text-amber-600"> · Late</span>}
                               </div>
                             </>

@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toMinutes, toTime } from "@/lib/booking-settings";
 import { closedAreas } from "@/lib/booking-writes";
-import { dayOfWeek, formatDay, formatLocalTime, localParts, shiftDate, tableState, toInstant } from "@/lib/bookings";
+import { count, dayOfWeek, formatDay, formatLocalTime, localParts, shiftDate, tableState, toInstant } from "@/lib/bookings";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Floor plan" };
@@ -204,7 +204,7 @@ async function FloorPlan({ searchParams }: { searchParams: PageProps<"/bookings/
                       </div>
                       <span className="truncate">{booking.guestName}</span>
                       <span className="text-xs text-muted-foreground">
-                        {booking.partySize} {booking.partySize === 1 ? "guest" : "guests"} · Table {booking.tables.map((link) => link.table.label).join(" + ")}
+                        {count(booking.partySize, "guest")} · Table {booking.tables.map((link) => link.table.label).join(" + ")}
                       </span>
                     </li>
                   );

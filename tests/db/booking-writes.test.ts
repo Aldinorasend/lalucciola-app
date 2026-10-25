@@ -100,5 +100,10 @@ test("waitlist: a party is seated once; a taken table puts it back in the queue"
   assert.match((await seatWaitlistEntry({ entryId: second.id, tableIds: [tableB], diningMinutes: 90, createdById: userId })) ?? "", /already booked then/);
   assert.equal((await db.waitlistEntry.findUniqueOrThrow({ where: { id: second.id } })).status, "WAITING");
 
+  // A database error (a table id that doesn't exist) also puts the party back.
+  const third = await waiting(run);
+  await assert.rejects(seatWaitlistEntry({ entryId: third.id, tableIds: ["no-such-table"], diningMinutes: 90, createdById: userId }));
+  assert.equal((await db.waitlistEntry.findUniqueOrThrow({ where: { id: third.id } })).status, "WAITING");
+
   await db.waitlistEntry.deleteMany({ where: { guestName: run } });
 });

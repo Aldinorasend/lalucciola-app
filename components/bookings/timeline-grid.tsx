@@ -4,6 +4,7 @@ import { BookingActions } from "@/components/bookings/booking-actions";
 import type { BookingRowData } from "@/components/bookings/booking-row";
 import { bookingStyle, isActive, STATUS_BADGE, WALK_IN_STYLE } from "@/components/bookings/status";
 import { toTime } from "@/lib/booking-settings";
+import { count } from "@/lib/bookings";
 
 export type GridTable = { id: string; label: string; section: string };
 export type GridBooking = BookingRowData & { startMinutes: number; endMinutes: number };
@@ -85,7 +86,7 @@ export function TimelineGrid({
                       {shown
                         .filter((booking) => booking.tableIds.includes(table.id))
                         .map((booking) => {
-                          const label = `${booking.time}–${booking.endTime} ${booking.guestName}, ${booking.partySize} ${booking.partySize === 1 ? "guest" : "guests"}`;
+                          const label = `${booking.time}–${booking.endTime} ${booking.guestName}, ${count(booking.partySize, "guest")}`;
                           const bar = (
                             <button
                               type="button"

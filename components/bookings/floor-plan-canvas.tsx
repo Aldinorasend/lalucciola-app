@@ -7,6 +7,7 @@ import type { BookingRowData } from "@/components/bookings/booking-row";
 import { bookingStyle, TABLE_STATE_STYLE, WALK_IN_STYLE } from "@/components/bookings/status";
 import { WalkInButton } from "@/components/bookings/walk-in-button";
 import { Button } from "@/components/ui/button";
+import { count } from "@/lib/bookings";
 
 export type FloorState = "FREE" | "SOON" | "SEATED" | "CLOSED";
 export type FloorTable = {
@@ -78,7 +79,7 @@ export function FloorPlanCanvas({ tables, slotMinutes, live }: { tables: FloorTa
               const { width: w, height: h } = tableSize(table);
               const title = [
                 `Table ${table.label}, ${table.maxSeats} seats`,
-                table.state === "CLOSED" ? "section closed" : table.booking ? `${table.booking.guestName}, ${table.booking.partySize} ${table.booking.partySize === 1 ? "guest" : "guests"}, ${table.booking.time}` : "free",
+                table.state === "CLOSED" ? "section closed" : table.booking ? `${table.booking.guestName}, ${count(table.booking.partySize, "guest")}, ${table.booking.time}` : "free",
               ].join(" · ");
               const shape = (
                 <button

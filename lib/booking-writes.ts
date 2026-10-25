@@ -134,28 +134,36 @@ export async function seatWaitlistEntry({ entryId, tableIds, diningMinutes, crea
   const claimed = await db.waitlistEntry.updateMany({ where: { id: entryId, status: "WAITING" }, data: { status: "SEATED", closedAt: startAt } });
   if (claimed.count === 0) return "This party was already seated or left.";
 
-  const entry = await db.waitlistEntry.findUniqueOrThrow({ where: { id: entryId } });
-  const endAt = new Date(startAt.getTime() + diningMinutes * 60_000);
-  const conflict = await writeBooking({
-    tableIds,
-    startAt,
-    endAt,
-    createdById,
-    data: {
-      guestName: entry.guestName,
-      guestPhone: entry.guestPhone,
-      partySize: entry.partySize,
-      source: "WALK_IN",
-      notes: null,
-      status: "SEATED",
-      seatedAt: startAt,
+  // Any failure after the claim puts the party back in the queue, not just a taken table.
+  const backInQueue = () => db.waitlistEntry.update({ where: { id: entryId }, data: { status: "WAITING", closedAt: null } });
+  let conflict: string | null;
+  try {
+    const entry = await db.waitlistEntry.findUniqueOrThrow({ where: { id: entryId } });
+    const endAt = new Date(startAt.getTime() + diningMinutes * 60_000);
+    conflict = await writeBooking({
+      tableIds,
       startAt,
       endAt,
-      waitlistEntry: { connect: { id: entryId } },
-    },
-  });
+      createdById,
+      data: {
+        guestName: entry.guestName,
+        guestPhone: entry.guestPhone,
+        partySize: entry.partySize,
+        source: "WALK_IN",
+        notes: null,
+        status: "SEATED",
+        seatedAt: startAt,
+        startAt,
+        endAt,
+        waitlistEntry: { connect: { id: entryId } },
+      },
+    });
+  } catch (error) {
+    await backInQueue();
+    throw error;
+  }
   if (conflict) {
-    await db.waitlistEntry.update({ where: { id: entryId }, data: { status: "WAITING", closedAt: null } });
+    await backInQueue();
     return conflict;
   }
   return null;

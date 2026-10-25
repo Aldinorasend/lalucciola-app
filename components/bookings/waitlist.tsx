@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActionToast } from "@/components/use-action-toast";
+import { count } from "@/lib/bookings";
 
 export function AddToWaitlistForm() {
   // Bumping the key clears the fields after a successful add.
@@ -58,7 +59,7 @@ export function WaitingRow({ party, date, time }: { party: WaitingParty; date: s
     <li className="flex flex-wrap items-center justify-between gap-3 border-b py-3 last:border-0">
       <div className="grid gap-0.5">
         <span className="font-medium">
-          {party.guestName} · {party.partySize} {party.partySize === 1 ? "guest" : "guests"}
+          {party.guestName} · {count(party.partySize, "guest")}
         </span>
         <span className="text-sm text-muted-foreground">
           <span className={overdue ? "font-medium text-amber-600" : ""}>Waiting {party.waitedMinutes} min</span>
@@ -75,7 +76,7 @@ export function WaitingRow({ party, date, time }: { party: WaitingParty; date: s
             <DialogHeader>
               <DialogTitle>Seat {party.guestName}</DialogTitle>
               <DialogDescription>
-                {party.partySize} {party.partySize === 1 ? "guest" : "guests"}. Pick free tables; they become a walk-in booking starting now.
+                {count(party.partySize, "guest")}. Pick free tables; they become a walk-in booking starting now.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={onSeat} className="grid gap-4">
