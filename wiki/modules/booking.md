@@ -48,6 +48,12 @@ Required: **guest name, phone, party size, date, time, table(s)**. Phone is opti
 - **Walk-in:** a quick form (name, party size, optional phone) that seats the party at a free table immediately. Source = `WALK_IN`.
 - **Waitlist:** when no table is free, add the party (name, size, phone, quoted wait). Staff can then **Seat** them (which converts the entry into a walk-in booking) or mark them **Left**. Wait time is shown live.
 
+## Built in Phase 2c: waitlist
+- `/bookings/waitlist`: add a party (name, guests, optional phone and quoted wait); the queue shows longest wait first with "waiting N min", turning amber past the quoted time; refreshes every minute.
+- **Seat** opens the shared table picker (free tables now); seating creates a SEATED walk-in booking under the same table locks as every booking and links it to the entry. The party is claimed first, so two staff can't seat it twice; a taken table puts it back in the queue.
+- **Left** closes the entry. "Earlier today" lists seated and left parties with their tables.
+- The sidebar shows the number of parties waiting next to Waitlist.
+
 ## Built in Phase 1b (D-047)
 - **Day list** at `/bookings/timeline?date=YYYY-MM-DD`: bookings in time order with status badges, Late badge, covers count, and previous/next/today navigation. The table × time grid and the calendar come in 1c.
 - **New / edit booking** in a side sheet. The table picker shows every active table by section and crosses out the ones taken at the chosen time (with the guest's name). Only BOOKED or SEATED bookings can be edited.

@@ -79,3 +79,26 @@ test("section closures: refused while booked, then block new bookings", async ()
   assert.match(refused ?? "", /is closed on that day/);
   await db.areaClosure.deleteMany({ where: { areaId } });
 });
+
+test("waitlist: a party is seated once; a taken table puts it back in the queue", async () => {
+  const { seatWaitlistEntry } = await import("../../lib/booking-writes");
+  const waiting = (guestName: string) => db.waitlistEntry.create({ data: { guestName, partySize: 2, createdById: userId } });
+
+  const first = await waiting(run);
+  const results = await Promise.all([
+    seatWaitlistEntry({ entryId: first.id, tableIds: [tableB], diningMinutes: 90, createdById: userId }),
+    seatWaitlistEntry({ entryId: first.id, tableIds: [tableB], diningMinutes: 90, createdById: userId }),
+  ]);
+  assert.equal(results.filter((result) => result === null).length, 1);
+  assert.match(results.find((result) => result !== null) ?? "", /already seated or left/);
+  const seated = await db.waitlistEntry.findUniqueOrThrow({ where: { id: first.id }, include: { booking: true } });
+  assert.equal(seated.status, "SEATED");
+  assert.equal(seated.booking?.source, "WALK_IN");
+
+  // tableB is now taken, so seating another party there fails and leaves it waiting.
+  const second = await waiting(run);
+  assert.match((await seatWaitlistEntry({ entryId: second.id, tableIds: [tableB], diningMinutes: 90, createdById: userId })) ?? "", /already booked then/);
+  assert.equal((await db.waitlistEntry.findUniqueOrThrow({ where: { id: second.id } })).status, "WAITING");
+
+  await db.waitlistEntry.deleteMany({ where: { guestName: run } });
+});

@@ -11,10 +11,11 @@ import {
   checkTables,
   dayOfWeek,
   parseBookingForm,
+  parseWaitlistForm,
   parseWalkInForm,
   toInstant,
 } from "@/lib/bookings";
-import { closedAreas, writeBooking } from "@/lib/booking-writes";
+import { closedAreas, seatWaitlistEntry, writeBooking } from "@/lib/booking-writes";
 import { getCurrentUser, hasPermission } from "@/lib/dal";
 import { db } from "@/lib/db";
 
@@ -172,6 +173,50 @@ export async function seatWalkIn(_previous: ActionResult, form: FormData): Promi
   });
   if (conflict) return { error: conflict };
 
+  refresh();
+  return { ok: true };
+}
+
+export async function addToWaitlist(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!(await hasPermission("bookings.manage"))) return NO_ACCESS;
+  const parsed = parseWaitlistForm(form);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const { guestPhone, quotedWaitMin, ...guest } = parsed.data;
+  await db.waitlistEntry.create({ data: { ...guest, guestPhone: guestPhone ?? null, quotedWaitMin: quotedWaitMin ?? null, createdById: user.id } });
+  refresh();
+  return { ok: true };
+}
+
+/** Seats a waiting party at the chosen free tables as a walk-in (wiki/modules/booking.md). */
+export async function seatFromWaitlist(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!(await hasPermission("bookings.manage"))) return NO_ACCESS;
+
+  const entryId = String(form.get("id"));
+  const tableIds = form.getAll("tableIds").map(String).filter(Boolean);
+  const [settings, entry, tables] = await Promise.all([
+    db.bookingSettings.findUnique({ where: { id: 1 } }),
+    db.waitlistEntry.findUnique({ where: { id: entryId }, select: { partySize: true } }),
+    db.table.findMany({ where: { id: { in: tableIds } } }),
+  ]);
+  if (!settings) return { error: "Booking settings are missing. Ask the owner to check Settings." };
+  if (!entry) return { error: "This party is no longer on the waitlist." };
+  if (tables.length !== tableIds.length) return { error: "A chosen table no longer exists. Reload and try again." };
+  const problem = checkTables(tables, entry.partySize);
+  if (problem) return { error: problem };
+
+  const error = await seatWaitlistEntry({ entryId, tableIds, diningMinutes: settings.diningMinutes, createdById: user.id });
+  if (error) return { error };
+  refresh();
+  return { ok: true };
+}
+
+export async function markWaitlistLeft(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  if (!(await hasPermission("bookings.manage"))) return NO_ACCESS;
+  const { count } = await db.waitlistEntry.updateMany({ where: { id: String(form.get("id")), status: "WAITING" }, data: { status: "LEFT", closedAt: new Date() } });
+  if (count === 0) return { error: "This party was already seated or left." };
   refresh();
   return { ok: true };
 }

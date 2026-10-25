@@ -6,13 +6,15 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NAV_GROUPS } from "@/lib/navigation";
 import { can, type Role } from "@/lib/permissions";
 
-export function NavMain({ role }: { role: Role }) {
+/** badges: counts shown next to items, keyed by href (e.g. parties waiting). */
+export function NavMain({ role, badges = {} }: { role: Role; badges?: Record<string, number> }) {
   const pathname = usePathname();
 
   return NAV_GROUPS.map((group, index) => {
@@ -37,6 +39,7 @@ export function NavMain({ role }: { role: Role }) {
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>
+              {badges[item.href] > 0 && <SidebarMenuBadge>{badges[item.href]}</SidebarMenuBadge>}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
