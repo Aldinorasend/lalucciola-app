@@ -55,7 +55,9 @@ export function AppSidebar() {
 }
 
 async function RoleNav() {
-  const [user, waiting] = await Promise.all([getCurrentUser(), db.waitlistEntry.count({ where: { status: "WAITING", addedAt: { gte: toInstant(localParts(new Date()).date, 0) } } })]);
+  // The user read comes first: it makes the render request-time, so `new Date()` is allowed.
+  const user = await getCurrentUser();
+  const waiting = await db.waitlistEntry.count({ where: { status: "WAITING", addedAt: { gte: toInstant(localParts(new Date()).date, 0) } } });
   return <NavMain role={user.role} badges={{ "/bookings/waitlist": waiting }} />;
 }
 
